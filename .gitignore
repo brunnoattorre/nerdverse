@@ -3,3 +3,4 @@ _v1/
 public/
 __pycache__/
 .DS_Store
+.fonts/

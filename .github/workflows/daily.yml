@@ -39,11 +39,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add latest.json index.html
+          git add latest.json index.html sitemap.xml
           git diff --cached --quiet || { git commit -m "Daily refresh: latest videos"; git push; }
 
       - name: Stage public files
-        run: mkdir -p public && cp -R index.html favicon.ico assets public/
+        run: mkdir -p public && cp -R index.html favicon.ico robots.txt sitemap.xml assets public/
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

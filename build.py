@@ -24,6 +24,7 @@ CACHE = HERE / "latest.json"
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0 Safari/537.36",
       "Accept-Language": "en-US,en;q=0.9"}
+SITE = "https://nerdscienceofficial.com/"
 STORE = "https://nerdscience-official.myspreadshop.com"
 IMG = "https://image.spreadshirtmedia.com/image-server/v1"
 
@@ -185,7 +186,7 @@ e = html.escape
 
 def video_panel(v, size):
     return f'''<a class="panel vid {size} reveal" href="https://www.youtube.com/watch?v={e(v["id"])}">
-  <img src="{e(v["thumb"])}" alt="" loading="lazy" width="1280" height="720">
+  <img src="{e(v["thumb"])}" alt="{e(v["title"])}" loading="lazy" width="1280" height="720">
   <span class="play" aria-hidden="true"></span>
   <span class="caption">{e(v["title"])}</span>
 </a>'''
@@ -224,10 +225,38 @@ def product_panel(p, i):
 </a>'''
 
 
+TITLE = "NerdScience Official: NerdScience, NerdHistory & NerdNature"
+DESC = ("NerdScience drops superheroes, historical armies and apex predators into impossible "
+        "fights and uses real science to call the winner. Watch the latest episodes and shop the merch.")
+
+
+def json_ld():
+    channels = [f"https://www.youtube.com/@{c['handle']}" for c in CHANNELS]
+    return json.dumps({
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "Organization", "@id": SITE + "#org", "name": "NerdScience",
+             "alternateName": ["NerdVerse", "NerdScience Official"], "url": SITE,
+             "logo": SITE + "assets/icon-192.png", "description": DESC, "sameAs": channels + [STORE]},
+            {"@type": "WebSite", "@id": SITE + "#site", "name": "NerdScience Official",
+             "url": SITE, "publisher": {"@id": SITE + "#org"}},
+        ],
+    }, ensure_ascii=False).replace("</", "<\\/")
+
+
+def write_seo_files():
+    (HERE / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n")
+    (HERE / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"  <url><loc>{SITE}</loc><lastmod>{datetime.now():%Y-%m-%d}</lastmod><changefreq>daily</changefreq></url>\n"
+        "</urlset>\n")
+
+
 def render(data):
     hero_thumbs = [data[c["key"]][0] for c in CHANNELS]
     strip = "".join(
-        f'<a class="panel strip-{c["key"]} reveal" href="#{c["key"]}"><img src="{e(v["thumb"])}" alt="" width="1280" height="720">'
+        f'<a class="panel strip-{c["key"]} reveal" href="#{c["key"]}"><img src="{e(v["thumb"])}" alt="{e(v["title"])}" width="1280" height="720">'
         f'<span class="caption">{e(c["name"])}</span></a>'
         for c, v in zip(CHANNELS, hero_thumbs))
     sections = "".join(channel_section(c, data[c["key"]], i % 2 == 1) for i, c in enumerate(CHANNELS))
@@ -235,7 +264,8 @@ def render(data):
     built = datetime.now().strftime("%-d %B %Y")
     return (TEMPLATE.replace("%%STRIP%%", strip).replace("%%SECTIONS%%", sections)
             .replace("%%PRODUCTS%%", products).replace("%%DESIGN%%", DESIGN).replace("%%STORE%%", STORE)
-            .replace("%%BUILT%%", built))
+            .replace("%%BUILT%%", built).replace("%%TITLE%%", e(TITLE)).replace("%%DESC%%", e(DESC))
+            .replace("%%JSONLD%%", json_ld()).replace("%%SITE%%", SITE))
 
 
 TEMPLATE = '''<!doctype html>
@@ -243,8 +273,23 @@ TEMPLATE = '''<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NerdVerse: NerdScience, NerdHistory and NerdNature</title>
-<meta name="description" content="The NerdVerse is three YouTube channels that drop heroes, armies and animals into impossible fights and use real science to call the winner.">
+<title>%%TITLE%%</title>
+<meta name="description" content="%%DESC%%">
+<link rel="canonical" href="%%SITE%%">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NerdScience">
+<meta property="og:url" content="%%SITE%%">
+<meta property="og:title" content="%%TITLE%%">
+<meta property="og:description" content="%%DESC%%">
+<meta property="og:image" content="%%SITE%%assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The NerdScience, NerdHistory and NerdNature logos under the words Who survives?">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="%%TITLE%%">
+<meta name="twitter:description" content="%%DESC%%">
+<meta name="twitter:image" content="%%SITE%%assets/og.jpg">
+<script type="application/ld+json">%%JSONLD%%</script>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
@@ -521,6 +566,7 @@ def main():
             sys.exit("Not enough videos fetched and no previous run to fall back on; index.html left as is.")
         CACHE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
     (HERE / "index.html").write_text(render(data))
+    write_seo_files()
     print(f"Wrote {HERE / 'index.html'}")
 
 
