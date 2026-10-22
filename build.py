@@ -281,14 +281,14 @@ TEMPLATE = '''<!doctype html>
 <meta property="og:url" content="%%SITE%%">
 <meta property="og:title" content="%%TITLE%%">
 <meta property="og:description" content="%%DESC%%">
-<meta property="og:image" content="%%SITE%%assets/og.jpg">
+<meta property="og:image" content="%%SITE%%assets/og.jpg?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="The NerdScience, NerdHistory and NerdNature logos under the words Who survives?">
+<meta property="og:image:alt" content="NerdScience logo between Kratos, Leon Kennedy and Batman, above the words Who survives?">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="%%TITLE%%">
 <meta name="twitter:description" content="%%DESC%%">
-<meta name="twitter:image" content="%%SITE%%assets/og.jpg">
+<meta name="twitter:image" content="%%SITE%%assets/og.jpg?v=2">
 <script type="application/ld+json">%%JSONLD%%</script>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">

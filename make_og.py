@@ -3,7 +3,7 @@
 import urllib.request
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = Path(__file__).parent
 FONTS = HERE / ".fonts"
@@ -30,38 +30,41 @@ def round_logo(key, d):
 
 
 def main():
-    im = Image.new("RGB", (W * S, H * S), YELLOW)
+    # Top: the sharp strip of the NerdScience YouTube banner (characters + logo), full bleed.
+    # Bottom: a dark-green caption band under the banner's yellow frame line.
+    banner = Image.open(HERE / "assets/banner-science.jpg").convert("RGB")
+    art = banner.crop((800, 428, 1640, 728))
+    art_h = round(art.height * W * S / art.width)
+    art = art.resize((W * S, art_h), Image.LANCZOS).filter(ImageFilter.UnsharpMask(2, 60, 2))
+
+    im = Image.new("RGB", (W * S, H * S), (10, 52, 28))
     dr = ImageDraw.Draw(im)
-    for y in range(0, H * S, 24):  # halftone dots
-        for x in range(0, W * S, 24):
-            dr.ellipse([x, y, x + 4, y + 4], fill=(230, 192, 9))
+    for y in range(art_h, H * S, 22):  # faint halftone in the caption band
+        for x in range(0, W * S, 22):
+            dr.ellipse([x, y, x + 4, y + 4], fill=(16, 66, 36))
+    im.paste(art, (0, 0))
+    dr.rectangle([0, art_h, W * S, art_h + 9 * S], fill=YELLOW)
 
-    title = font("Bangers.ttf", 132)
-    text = "Who survives?"
-    tw = dr.textlength(text, font=title)
-    tx, ty = (W * S - tw) / 2, 52 * S
-    dr.text((tx + 7 * S, ty + 7 * S), text, font=title, fill=PAPER)
-    dr.text((tx, ty), text, font=title, fill=INK)
+    m = 44 * S
+    band_top = art_h + 9 * S
+    title = font("Bangers.ttf", 96)
+    ty = band_top + 20 * S
+    dr.text((m + 6 * S, ty + 6 * S), "Who survives?", font=title, fill=INK)
+    dr.text((m, ty), "Who survives?", font=title, fill=YELLOW)
+    sub = font("Barlow-ExtraBold.ttf", 30)
+    dr.text((m + 2 * S, ty + 102 * S), "nerdscienceofficial.com", font=sub, fill=PAPER)
 
-    d = 270 * S
-    gap = 46 * S
-    x0 = (W * S - (3 * d + 2 * gap)) // 2
-    y0 = 222 * S
-    for i, key in enumerate(("science", "history", "nature")):
-        x = x0 + i * (d + gap)
-        dr.ellipse([x + 9 * S, y0 + 9 * S, x + d + 9 * S, y0 + d + 9 * S], fill=INK)  # printed offset
+    d = 112 * S
+    gap = 16 * S
+    y0 = band_top + ((H * S - band_top) - d) // 2
+    for i, key in enumerate(("nature", "history", "science")):  # right-aligned, science outermost
+        x = W * S - m - d - i * (d + gap)
+        dr.ellipse([x + 6 * S, y0 + 6 * S, x + d + 6 * S, y0 + d + 6 * S], fill=INK)
         logo = round_logo(key, d)
         im.paste(logo, (x, y0), logo)
-        dr.ellipse([x + d * 0.03, y0 + d * 0.03, x + d * 0.97, y0 + d * 0.97], outline=INK, width=5 * S)
+        dr.ellipse([x + d * 0.03, y0 + d * 0.03, x + d * 0.97, y0 + d * 0.97], outline=INK, width=4 * S)
 
-    sub = font("Barlow-ExtraBold.ttf", 34)
-    line = "nerdscienceofficial.com"
-    sw = dr.textlength(line, font=sub)
-    bx, by, pad = (W * S - sw) / 2, 548 * S, 16 * S
-    dr.rectangle([bx - pad, by - 8 * S, bx + sw + pad, by + 46 * S], fill=INK)
-    dr.text((bx, by), line, font=sub, fill=YELLOW)
-
-    im.resize((W, H), Image.LANCZOS).convert("RGB").save(HERE / "assets/og.jpg", quality=86, optimize=True)
+    im.resize((W, H), Image.LANCZOS).save(HERE / "assets/og.jpg", quality=88, optimize=True)
     print("Wrote assets/og.jpg")
 
 
