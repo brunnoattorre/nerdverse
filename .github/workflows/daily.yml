@@ -2,7 +2,7 @@ name: Daily build
 
 on:
   schedule:
-    - cron: "0 9 * * *"   # 09:00 UTC every day
+    - cron: "30 13 * * *"   # 13:30 UTC every day
   workflow_dispatch:       # "Run workflow" button for an instant refresh after an upload
   push:
     branches: [main]
