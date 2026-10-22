@@ -271,7 +271,7 @@ def last_month_winner():
     try:
         f = json.loads(get(url))["fields"]
         return {"month": key, "title": f["title"]["stringValue"],
-                "gained": int(f["gained"]["integerValue"])}
+                "videoId": f.get("videoId", {}).get("stringValue")}
     except Exception:
         return None
 
@@ -280,8 +280,10 @@ def champ_html(w):
     if not w:
         return ""
     month = datetime.strptime(w["month"], "%Y-%m").strftime("%B")
-    return (f'<p class="champ-line reveal">{e(month)}\'s Idea of the Month: '
-            f'<strong>{e(w["title"])}</strong></p>')
+    title = f'<strong>{e(w["title"])}</strong>'
+    if w["videoId"]:
+        title = f'<a href="https://www.youtube.com/watch?v={e(w["videoId"])}">{title}</a>'
+    return f'<p class="champ-line reveal">{e(month)}\'s Idea of the Month: {title}</p>'
 
 
 def render(data, champ=None):
@@ -651,6 +653,7 @@ IDEAS_TEMPLATE = '''<!doctype html>
 .champ-k{font:400 1.6rem/1 var(--display);letter-spacing:.03em;display:inline-block;background:var(--ink);color:var(--yellow);padding:.35em .6em .25em}
 .champ-t{font:400 clamp(2.4rem,5vw,4.4rem)/1 var(--display);letter-spacing:.01em;margin-block:16px 10px}
 .champ-m{font-weight:800}
+.champ-watch{margin-top:18px}
 .box{border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ink);padding:clamp(20px,3vw,32px)} /* taste-skill-ignore: comic print offset */
 .box h2{font-size:clamp(2.2rem,4vw,3.2rem);margin-bottom:16px}
 .winbox{background:var(--green);color:var(--paper)}

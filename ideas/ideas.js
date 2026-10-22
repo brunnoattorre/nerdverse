@@ -142,7 +142,10 @@ async function loadMonthly() {
     $("champ").hidden = !champ;
     if (champ) $("champ").innerHTML = `<p class="champ-k">Idea of the Month · ${esc(fmtMonth(champ.month))}</p>
       <p class="champ-t">${esc(champ.title)}</p>
-      <p class="champ-m">${esc(CH[champ.channel] || "")} · +${champ.gained} votes in ${esc(fmtMonth(champ.month, { month: "long" }))} · suggested by ${esc(champ.authorName)}</p>`;
+      <p class="champ-m">${[CH[champ.channel],
+        champ.gained != null && `+${champ.gained} votes in ${fmtMonth(champ.month, { month: "long" })}`,
+        champ.authorName && `suggested by ${champ.authorName}`].filter(Boolean).map(esc).join(" · ")}</p>
+      ${champ.videoId ? `<a class="btn champ-watch" href="https://www.youtube.com/watch?v=${esc(champ.videoId)}">Watch the video</a>` : ""}`;
     $("winner").innerHTML = `<p class="w-day">Leading ${esc(fmtMonth(thisMonth, { month: "long" }))} so far</p>` +
       (leaders.length ? `<ol class="leaders">${leaders.map((l, i) => `<li${i ? "" : ' class="lead"'}>
           <span class="w-title">${esc(l.title)}</span>
@@ -150,7 +153,8 @@ async function loadMonthly() {
           <p class="w-note">Standings update every morning. The winner is announced on the 1st.</p>`
         : `<p class="w-none">No votes this month yet. The idea with the most votes by the end of the month wins.</p>`);
     $("winners").innerHTML = wins.slice(champ ? 1 : 0).map((w) =>
-      `<li><span class="w-d">${esc(fmtMonth(w.month, { month: "short", year: "numeric" }))}</span> ${esc(w.title)} <span class="w-g">+${w.gained}</span></li>`).join("");
+      `<li><span class="w-d">${esc(fmtMonth(w.month, { month: "short", year: "numeric" }))}</span> ${w.videoId
+        ? `<a href="https://www.youtube.com/watch?v=${esc(w.videoId)}">${esc(w.title)}</a>` : esc(w.title)}${w.gained != null ? ` <span class="w-g">+${w.gained}</span>` : ""}</li>`).join("");
     $("winners-h").hidden = wins.length <= (champ ? 1 : 0);
   } catch (e) { console.error(e); }
 }
