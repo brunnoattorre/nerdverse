@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NerdVerse: NerdScience, NerdHistory and NerdNature</title>
+<meta name="description" content="The NerdVerse is three YouTube channels that drop heroes, armies and animals into impossible fights and use real science to call the winner.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barlow:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141414; --paper:#fffdf5; --yellow:#ffd60a;
+  --green:#1e9b4a; --red:#d62631; --blue:#1d66d6;
+  --display:"Bangers","Impact","Arial Narrow Bold",sans-serif;
+  --text:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --line:4px; --drop:7px; --m:clamp(16px,4vw,48px);
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font:500 18px/1.55 var(--text)}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit}
+.wrap{max-width:1360px;margin:0 auto;padding-inline:var(--m)}
+h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-height:.95}
+:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+
+/* Halftone: the dot screen of printed comics */
+.dots{background-image:radial-gradient(rgba(20,20,20,.16) 1.6px,transparent 1.7px);background-size:12px 12px} /* taste-skill-ignore: comic print offset + halftone, requested style */
+
+/* Panels: thick ink line and a hard printed offset */
+.panel{position:relative;display:block;border:var(--line) solid var(--ink);background:var(--paper);
+  box-shadow:var(--drop) var(--drop) 0 var(--ink);text-decoration:none;overflow:hidden; /* taste-skill-ignore: comic print offset + halftone, requested style */
+  transition:transform .18s ease,box-shadow .18s ease}
+.panel:hover{transform:translate(-3px,-3px) rotate(-.6deg);box-shadow:calc(var(--drop) + 4px) calc(var(--drop) + 4px) 0 var(--ink)} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.panel:active{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.panel img{width:100%;aspect-ratio:16/9;object-fit:cover}
+.caption{position:absolute;left:-4px;bottom:-4px;max-width:92%;background:var(--yellow);border:var(--line) solid var(--ink);
+  padding:.35em .7em;font:800 .95rem/1.25 var(--text)}
+
+.btn{display:inline-block;font:400 1.5rem/1 var(--display);letter-spacing:.03em;padding:.55em 1em .45em;
+  background:var(--yellow);color:var(--ink);border:var(--line) solid var(--ink);box-shadow:5px 5px 0 var(--ink); /* taste-skill-ignore: comic print offset + halftone, requested style */
+  text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)} /* taste-skill-ignore: comic print offset + halftone, requested style */
+
+/* Nav */
+.nav{background:var(--ink);color:var(--paper)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:68px;flex-wrap:wrap}
+.brand{font:400 2rem/1 var(--display);color:var(--yellow);text-decoration:none;letter-spacing:.03em}
+.nav ul{display:flex;gap:clamp(.8rem,2.5vw,2rem);list-style:none;padding:0;font-weight:700}
+.nav ul a{text-decoration:none}
+.nav ul a:hover{color:var(--yellow)}
+
+/* Hero */
+.hero{background-color:var(--yellow);border-bottom:var(--line) solid var(--ink);padding-block:clamp(48px,7vw,96px) clamp(56px,8vw,112px)}
+.hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(32px,5vw,72px);align-items:center}
+.hero h1{font-size:clamp(3.4rem,6.4vw,6.8rem);text-shadow:5px 5px 0 var(--paper)} /* taste-skill-ignore: comic ink offset on display type */
+.hero .lede{font-size:clamp(1.15rem,1.7vw,1.4rem);font-weight:700;max-width:30em;margin-block:28px 36px}
+.bubble{position:relative;display:inline-block;background:var(--paper);border:var(--line) solid var(--ink);border-radius:50%;
+  padding:.7em 1.4em;font:400 clamp(1.4rem,2.4vw,2rem)/1 var(--display);margin-bottom:22px;transform:rotate(-3deg)}
+.bubble::after{content:"";position:absolute;left:28%;bottom:-22px;border:12px solid transparent;border-top:20px solid var(--ink)}
+.splash{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.splash .panel:first-child{grid-column:1/-1;transform:rotate(-1.2deg)}
+.splash .panel:nth-child(2){transform:rotate(1.4deg)}
+.splash .panel:nth-child(3){transform:rotate(-.8deg)}
+.splash .strip-science .caption{background:var(--green);color:var(--paper)}
+.splash .strip-history .caption{background:var(--red);color:var(--paper)}
+.splash .strip-nature .caption{background:var(--blue);color:var(--paper)}
+.badges{display:flex;gap:14px;margin-top:40px}
+.badges a{display:block;width:clamp(64px,7vw,92px);transition:transform .18s ease}
+.badges a:hover{transform:rotate(-8deg) scale(1.08)}
+.badges img{border-radius:50%;border:var(--line) solid var(--ink)}
+
+/* What it is */
+.what{padding-block:clamp(72px,10vw,140px)}
+.what-grid{display:grid;grid-template-columns:1fr 1.3fr;gap:clamp(32px,6vw,96px);align-items:start}
+.what h2{font-size:clamp(3rem,6vw,5.5rem)}
+.beats{display:grid;gap:22px;list-style:none;padding:0}
+.beats li{border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ink);background:var(--paper);padding:20px 24px} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.beats li:nth-child(1){transform:rotate(-.7deg);background:var(--paper)}
+.beats li:nth-child(2){transform:rotate(.6deg);margin-left:clamp(0px,4vw,48px)}
+.beats li:nth-child(3){transform:rotate(-.4deg);margin-left:clamp(0px,8vw,96px)}
+.beats strong{display:block;font:400 2rem/1 var(--display);margin-bottom:6px}
+
+/* Channels */
+.channel{border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px);color:var(--paper)}
+.channel.science{background-color:var(--green)}
+.channel.history{background-color:var(--red)}
+.channel.nature{background-color:var(--blue)}
+.channel-grid{display:grid;grid-template-columns:minmax(280px,.8fr) 1.4fr;gap:clamp(32px,5vw,80px);align-items:start}
+.channel.flip .channel-grid{grid-template-columns:1.4fr minmax(280px,.8fr)}
+.channel.flip .intro{order:2}
+.logo{width:clamp(140px,16vw,220px);border-radius:50%;border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ink);margin-bottom:28px;transform:rotate(-4deg)} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.channel h2{font-size:clamp(3.2rem,6vw,5.8rem);color:var(--yellow);text-shadow:4px 4px 0 var(--ink)} /* taste-skill-ignore: comic ink offset on display type */
+.tagline{font:400 1.6rem/1.1 var(--display);letter-spacing:.03em;margin-block:10px 16px}
+.about{max-width:32em;margin-bottom:28px}
+.latest-label{font-size:2rem;color:var(--yellow);text-shadow:3px 3px 0 var(--ink);margin-bottom:18px} /* taste-skill-ignore: comic ink offset on display type */
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.vid.big{grid-column:1/-1}
+.vid{color:var(--ink)}
+.vid.small:nth-child(2){transform:rotate(-.8deg)}
+.vid.small:nth-child(3){transform:rotate(.8deg)}
+.vid.big .caption{font-size:1.15rem}
+.vid.small .caption{font-size:.82rem;padding:.3em .55em}
+.play{position:absolute;top:14px;right:14px;width:52px;height:52px;border-radius:50%;background:var(--yellow);border:var(--line) solid var(--ink)}
+.play::after{content:"";position:absolute;left:19px;top:13px;border:9px solid transparent;border-left:14px solid var(--ink);border-right:0}
+.vid.small .play{width:40px;height:40px;top:10px;right:10px}
+.vid.small .play::after{left:13px;top:8px;border-width:8px 0 8px 12px}
+.more{display:inline-block;margin-top:26px;font-weight:800;text-underline-offset:4px}
+
+/* Store */
+.store{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
+.store-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:48px}
+.store h2{font-size:clamp(3.2rem,7vw,6.5rem);text-shadow:5px 5px 0 var(--paper)} /* taste-skill-ignore: comic ink offset on display type */
+.store-head p{max-width:28em;font-weight:700;margin-top:12px}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:40px 26px}
+.product{transform:rotate(var(--tilt));padding-bottom:16px}
+.product img{aspect-ratio:1;background:#eee}
+.product.noimg img{display:none}
+.product .ph{display:none}
+.product.noimg .ph{display:grid;place-items:center;aspect-ratio:1;background:var(--green);color:var(--yellow);font:400 2.2rem/1 var(--display);text-align:center;padding:16px;text-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic ink offset on display type */
+.tag{position:absolute;top:12px;left:12px;background:var(--red);color:var(--paper);border:var(--line) solid var(--ink);
+  font:400 1.5rem/1 var(--display);padding:.3em .5em .2em;transform:rotate(-6deg)}
+.pname{display:block;font:400 1.6rem/1 var(--display);padding:14px 16px 2px;letter-spacing:.02em}
+.pkind{display:block;padding:0 16px;font-weight:700}
+
+/* Footer */
+.foot{background:var(--ink);color:var(--paper);padding-block:clamp(64px,8vw,104px) 40px}
+.foot .big{font:400 clamp(4rem,15vw,14rem)/.85 var(--display);color:var(--yellow);letter-spacing:.01em}
+.foot-row{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-top:40px}
+.foot ul{display:flex;gap:24px;flex-wrap:wrap;list-style:none;padding:0;font-weight:700}
+.foot ul a{text-decoration:none}
+.foot ul a:hover{color:var(--yellow)}
+.fine{max-width:46em;font-size:.95rem;margin-top:28px;color:#d9d6cc}
+
+/* Entrances: only hidden when the script is running */
+.js .reveal{opacity:0;translate:0 24px;transition:opacity .5s ease,translate .5s cubic-bezier(.2,.8,.2,1)}
+.js .reveal.in{opacity:1;translate:0 0}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .js .reveal{opacity:1;translate:none;transition:none}
+  .panel,.btn,.badges a{transition:none}
+}
+
+@media (max-width:960px){
+  .hero-grid,.what-grid,.channel-grid{grid-template-columns:1fr}
+  .channel.flip .channel-grid{grid-template-columns:1fr}
+  .channel.flip .intro{order:0}
+  .intro{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start}
+  .logo{width:120px;margin:0}
+  .products{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:560px){
+  body{font-size:17px}
+  .intro{grid-template-columns:1fr}
+  .vid-grid{grid-template-columns:1fr}
+  .vid.small:nth-child(n){transform:none}
+  .caption{font-size:.85rem}
+  .beats li:nth-child(n){margin-left:0}
+  .nav ul{gap:.9rem;font-size:.95rem}
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">NerdVerse</a>
+    <nav aria-label="Main"><ul>
+      <li><a href="#science">NerdScience</a></li>
+      <li><a href="#history">NerdHistory</a></li>
+      <li><a href="#nature">NerdNature</a></li>
+      <li><a href="#store">Store</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero dots" aria-labelledby="h-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="bubble">Who survives?</p>
+      <h1 id="h-hero">Welcome to<br>the NerdVerse</h1>
+      <p class="lede">Three YouTube channels that drop heroes, armies and animals into impossible fights, then use real science to call the winner.</p>
+      <a class="btn" href="#science">Watch the latest episodes</a>
+      <div class="badges">
+        <a href="#science"><img src="assets/logo-science.jpg" alt="NerdScience" width="400" height="400"></a>
+        <a href="#history"><img src="assets/logo-history.jpg" alt="NerdHistory" width="400" height="400"></a>
+        <a href="#nature"><img src="assets/logo-nature.jpg" alt="NerdNature" width="400" height="400"></a>
+      </div>
+    </div>
+    <div class="splash"><a class="panel strip-science reveal" href="#science"><img src="https://i.ytimg.com/vi/rlGSVjdG2no/maxresdefault.jpg" alt="" width="1280" height="720"><span class="caption">NerdScience</span></a><a class="panel strip-history reveal" href="#history"><img src="https://i.ytimg.com/vi/b7eX6haaWss/maxresdefault.jpg" alt="" width="1280" height="720"><span class="caption">NerdHistory</span></a><a class="panel strip-nature reveal" href="#nature"><img src="https://i.ytimg.com/vi/j7c6Gc8og_M/maxresdefault.jpg" alt="" width="1280" height="720"><span class="caption">NerdNature</span></a></div>
+  </div>
+</section>
+
+<section class="what" aria-labelledby="h-what">
+  <div class="wrap what-grid">
+    <h2 id="h-what" class="reveal">One question, three worlds</h2>
+    <ol class="beats">
+      <li class="reveal"><strong>Pick a fighter</strong>A superhero, a Roman legion, a silverback gorilla. Anyone with a record we can measure.</li>
+      <li class="reveal"><strong>Drop them somewhere impossible</strong>Helm's Deep, the Alamo, the Ice Age, a horror movie. The worse the odds, the better.</li>
+      <li class="reveal"><strong>Let the science decide</strong>Real feats, real weapons, real anatomy. No plot armour, just the numbers.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="channel science" id="science" aria-labelledby="h-science">
+  <div class="wrap channel-grid">
+    <div class="intro">
+      <img class="logo reveal" src="assets/logo-science.jpg" alt="NerdScience logo" width="400" height="400">
+      <div class="intro-text">
+        <h2 id="h-science" class="reveal">NerdScience</h2>
+        <p class="tagline reveal">Comics, movies and games</p>
+        <p class="about reveal">Superheroes, villains and video game legends, tested against each other and against their own canon. Could Wolverine survive every Superman villain? Could Kratos solo Game of Thrones? We pull the feats from the source material and do the maths.</p>
+        <a class="btn reveal" href="https://www.youtube.com/@NerdScienceOfficial?sub_confirmation=1">Subscribe</a>
+      </div>
+    </div>
+    <div class="videos">
+      <h3 class="latest-label">Latest episodes</h3>
+      <div class="vid-grid"><a class="panel vid big reveal" href="https://www.youtube.com/watch?v=rlGSVjdG2no">
+  <img src="https://i.ytimg.com/vi/rlGSVjdG2no/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">
+  <span class="play" aria-hidden="true"></span>
+  <span class="caption">Could DC&#x27;s Suicide Squad Survive The Predator?</span>
+</a><a class="panel vid small reveal" href="https://www.youtube.com/watch?v=YHBVjeJqCdk">
+  <img src="https://i.ytimg.com/vi/YHBVjeJqCdk/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">
+  <span class="play" aria-hidden="true"></span>
+  <span class="caption">Could Sam and Dean Winchester Survive The Shining?</span>
+</a><a class="panel vid small reveal" href="https://www.youtube.com/watch?v=__pn6WIukcg">
+  <img src="https://i.ytimg.com/vi/__pn6WIukcg/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">
+  <span class="play" aria-hidden="true"></span>
+  <span class="caption">Could The Punisher Survive Deathstroke?</span>
+</a></div>
+      <a class="more" href="https://www.youtube.com/@NerdScienceOfficial/videos">All NerdScience videos</a>
+    </div>
+  </div>
+</section><section class="channel history flip" id="history" aria-labelledby="h-history">
+  <div class="wrap channel-grid">
+    <div class="intro">
+      <img class="logo reveal" src="assets/logo-history.jpg" alt="NerdHistory logo" width="400" height="400">
+      <div class="intro-text">
+        <h2 id="h-history" class="reveal">NerdHistory</h2>
+        <p class="tagline reveal">Real armies, real battles</p>
+        <p class="about reveal">The greatest fighting forces in history, dropped into battles they never fought. 300 Spartans at the Alamo, a Navy SEAL team inside Modern Warfare, the Roman Empire in A Quiet Place. Real units, real weapons, real tactics.</p>
+        <a class="btn reveal" href="https://www.youtube.com/@NerdHistoryNs?sub_confirmation=1">Subscribe</a>
+      </div>
+    </div>
+    <div class="videos">
+      <h3 class="latest-label">Latest episodes</h3>
+      <div class="vid-grid"><a class="panel vid big reveal" href="https://www.youtube.com/watch?v=b7eX6haaWss">
+  <img src="https://i.ytimg.com/vi/b7eX6haaWss/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">
+  <span class="play" aria-hidden="true"></span>
+  <span class="caption">Could a Real Navy SEAL Team Survive COD Modern Warfare 2?</span>
+</a><a class="panel vid small reveal" href="https://www.youtube.com/watch?v=rICeyM2jrUs">
+  <img src="https://i.ytimg.com/vi/rICeyM2jrUs/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">
+  <span class="play" aria-hidden="true"></span>
+  <span class="caption">Could Captain America Actually Survive WW2?</span>
+</a><a class="panel vid small reveal" href="https://www.youtube.com/watch?v=uYFhXRDd7bU">
+  <img src="https://i.ytimg.com/vi/uYFhXRDd7bU/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">
+  <span class="play" aria-hidden="true"></span>
+  <span class="caption">Could 300 Spartans Hold The Alamo?</span>
+</a></div>
+      <a class="more" href="https://www.youtube.com/@NerdHistoryNs/videos">All NerdHistory videos</a>
+    </div>
+  </div>
+</section><section class="channel nature" id="nature" aria-labelledby="h-nature">
+  <div class="wrap channel-grid">
+    <div class="intro">
+      <img class="logo reveal" src="assets/logo-nature.jpg" alt="NerdNature logo" width="400" height="400">
+      <div class="intro-text">
+        <h2 id="h-nature" class="reveal">NerdNature</h2>
+        <p class="tagline reveal">Nature is stranger than fiction</p>
+        <p class="about reveal">Apex predators, extinct giants and animals scaled up to impossible sizes. What if house cats were the size of tigers? Which predator could take down a Xenomorph? Real anatomy and real biology decide every fight.</p>
+        <a class="btn reveal" href="https://www.youtube.com/@NerdNatureNs?sub_confirmation=1">Subscribe</a>
+      </div>
+    </div>
+    <div class="videos">
+      <h3 class="latest-label">Latest episodes</h3>
+      <div class="vid-grid"><a class="panel vid big reveal" href="https://www.youtube.com/watch?v=j7c6Gc8og_M">
+  <img src="https://i.ytimg.com/vi/j7c6Gc8og_M/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">
+  <span class="play" aria-hidden="true"></span>
+  <span class="caption">What If 4 Extinct Predators Came Back To Life?</span>
+</a><a class="panel vid small reveal" href="https://www.youtube.com/watch?v=0QSvmqE31qY">
+  <img src="https://i.ytimg.com/vi/0QSvmqE31qY/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">
+  <span class="play" aria-hidden="true"></span>
+  <span class="caption">Which Apex Predator Can Take Down a Xenomorph?</span>
+</a><a class="panel vid small reveal" href="https://www.youtube.com/watch?v=KN0HcWTpkv4">
+  <img src="https://i.ytimg.com/vi/KN0HcWTpkv4/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">
+  <span class="play" aria-hidden="true"></span>
+  <span class="caption">What If A Meteor Were To Hit Earth?</span>
+</a></div>
+      <a class="more" href="https://www.youtube.com/@NerdNatureNs/videos">All NerdNature videos</a>
+    </div>
+  </div>
+</section>
+
+<section class="store dots" id="store" aria-labelledby="h-store">
+  <div class="wrap">
+    <div class="store-head">
+      <div>
+        <h2 id="h-store" class="reveal">Wear the NerdVerse</h2>
+        <p class="reveal">The Nerd Science Logo on tees, hoodies, mugs and more, printed to order.</p>
+      </div>
+      <a class="btn reveal" href="https://nerdscience-official.myspreadshop.com/nerd+science+logo?idea=699a0aa41499ed59b83f9695">Shop the logo collection</a>
+    </div>
+    <div class="products"><a class="panel product reveal" href="https://nerdscience-official.myspreadshop.com/nerd+science+logo-A699a0aa41499ed59b83f9695?productType=812&amp;sellable=G7JjB95a1VU7k8VG5Dvr-812-7&amp;appearance=2" style="--tilt:-1.5deg">
+  <img src="https://image.spreadshirtmedia.com/image-server/v1/products/T812A2PA4267PT17X220Y72D1058430669W8299H8600/views/1,width=500,height=500,appearanceId=2/nerd-science-logo-mens-premium-t-shirt.jpg" alt="Nerd Science Logo men&#x27;s premium t-shirt" loading="lazy" width="650" height="650">
+  <span class="ph" aria-hidden="true">Nerd Science Logo</span>
+  <span class="tag">$26.99</span>
+  <span class="pname">Men&#x27;s premium T-shirt</span>
+</a><a class="panel product reveal" href="https://nerdscience-official.myspreadshop.com/nerd+science+logo-A699a0aa41499ed59b83f9695?productType=347&amp;sellable=G7JjB95a1VU7k8VG5Dvr-347-8&amp;appearance=2" style="--tilt:1.2deg">
+  <img src="https://image.spreadshirtmedia.com/image-server/v1/products/T347A2PA4306PT17X38Y30D1058430669W17598H18235/views/1,width=500,height=500,appearanceId=2/nerd-science-logo-womens-t-shirt.jpg" alt="Nerd Science Logo women&#x27;s t-shirt" loading="lazy" width="650" height="650">
+  <span class="ph" aria-hidden="true">Nerd Science Logo</span>
+  <span class="tag">$23.49</span>
+  <span class="pname">Women&#x27;s T-shirt</span>
+</a><a class="panel product reveal" href="https://nerdscience-official.myspreadshop.com/nerd+science+logo-A699a0aa41499ed59b83f9695?productType=111&amp;sellable=G7JjB95a1VU7k8VG5Dvr-111-22&amp;appearance=2" style="--tilt:-0.8deg">
+  <img src="https://image.spreadshirtmedia.com/image-server/v1/products/T111A2PA4247PT17X231Y34D1058430669W10599H10983/views/1,width=500,height=500,appearanceId=2/nerd-science-logo-mens-hoodie.jpg" alt="Nerd Science Logo men&#x27;s hoodie" loading="lazy" width="650" height="650">
+  <span class="ph" aria-hidden="true">Nerd Science Logo</span>
+  <span class="tag">$41.49</span>
+  <span class="pname">Men&#x27;s hoodie</span>
+</a><a class="panel product reveal" href="https://nerdscience-official.myspreadshop.com/nerd+science+logo-A699a0aa41499ed59b83f9695?productType=405&amp;sellable=G7JjB95a1VU7k8VG5Dvr-405-23&amp;appearance=2" style="--tilt:1.6deg">
+  <img src="https://image.spreadshirtmedia.com/image-server/v1/products/T405A2PA4081PT17X61Y21D1058430669W18856H19538/views/1,width=500,height=500,appearanceId=2/nerd-science-logo-womens-hoodie.jpg" alt="Nerd Science Logo women&#x27;s hoodie" loading="lazy" width="650" height="650">
+  <span class="ph" aria-hidden="true">Nerd Science Logo</span>
+  <span class="tag">$41.49</span>
+  <span class="pname">Women&#x27;s hoodie</span>
+</a><a class="panel product reveal" href="https://nerdscience-official.myspreadshop.com/nerd+science+logo-A699a0aa41499ed59b83f9695?productType=512&amp;sellable=G7JjB95a1VU7k8VG5Dvr-512-27&amp;appearance=2" style="--tilt:1deg">
+  <img src="https://image.spreadshirtmedia.com/image-server/v1/products/T512A2PA4049PT17X42Y30D1058430669W21652H22436/views/1,width=500,height=500,appearanceId=2/nerd-science-logo-unisex-crewneck-sweatshirt.jpg" alt="Nerd Science Logo crewneck sweatshirt" loading="lazy" width="650" height="650">
+  <span class="ph" aria-hidden="true">Nerd Science Logo</span>
+  <span class="tag">$37.99</span>
+  <span class="pname">Crewneck sweatshirt</span>
+</a><a class="panel product reveal" href="https://nerdscience-official.myspreadshop.com/nerd+science+logo-A699a0aa41499ed59b83f9695?productType=268&amp;sellable=G7JjB95a1VU7k8VG5Dvr-268-32&amp;appearance=70" style="--tilt:-1.3deg">
+  <img src="https://image.spreadshirtmedia.com/image-server/v1/products/T268A70PA5007PT10X9Y10D1058430669W4213H4365/views/3,width=500,height=500,appearanceId=70/nerd-science-logo-contrast-coffee-mug.jpg" alt="Nerd Science Logo contrast coffee mug" loading="lazy" width="650" height="650">
+  <span class="ph" aria-hidden="true">Nerd Science Logo</span>
+  <span class="tag">$17.49</span>
+  <span class="pname">Contrast coffee mug</span>
+</a><a class="panel product reveal" href="https://nerdscience-official.myspreadshop.com/nerd+science+logo-A699a0aa41499ed59b83f9695?productType=842&amp;sellable=G7JjB95a1VU7k8VG5Dvr-842-33&amp;appearance=2" style="--tilt:1.5deg">
+  <img src="https://image.spreadshirtmedia.com/image-server/v1/products/T842A2PA3667PT17X38Y29D1058430669W17573H18209/views/1,width=500,height=500,appearanceId=2/nerd-science-logo-tote-bag.jpg" alt="Nerd Science Logo tote bag" loading="lazy" width="650" height="650">
+  <span class="ph" aria-hidden="true">Nerd Science Logo</span>
+  <span class="tag">$17.99</span>
+  <span class="pname">Tote bag</span>
+</a><a class="panel product reveal" href="https://nerdscience-official.myspreadshop.com/nerd+science+logo-A699a0aa41499ed59b83f9695?productType=757&amp;sellable=G7JjB95a1VU7k8VG5Dvr-757-39&amp;appearance=1" style="--tilt:-0.7deg">
+  <img src="https://image.spreadshirtmedia.com/image-server/v1/products/T757A1PA4077PT10X9Y9D1058430669W4209H4362/views/3,width=500,height=500,appearanceId=1/nerd-science-logo-20-oz-water-bottle.jpg" alt="Nerd Science Logo 20 oz water bottle" loading="lazy" width="650" height="650">
+  <span class="ph" aria-hidden="true">Nerd Science Logo</span>
+  <span class="tag">$20.99</span>
+  <span class="pname">20 oz water bottle</span>
+</a></div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="big">NerdVerse</p>
+    <div class="foot-row">
+      <ul>
+        <li><a href="https://www.youtube.com/@NerdScienceOfficial">NerdScience on YouTube</a></li>
+        <li><a href="https://www.youtube.com/@NerdHistoryNs">NerdHistory on YouTube</a></li>
+        <li><a href="https://www.youtube.com/@NerdNatureNs">NerdNature on YouTube</a></li>
+        <li><a href="https://nerdscience-official.myspreadshop.com">Store</a></li>
+      </ul>
+      <p>Videos updated 21 October 2026</p>
+    </div>
+    <p class="fine">The NerdVerse channels are independent, fan-made projects, not affiliated with, authorized, endorsed or sponsored by DC Comics, Marvel, Warner Bros. Discovery, The Walt Disney Company or any other rights holder. All characters, names and related properties belong to their respective owners.</p>
+  </div>
+</footer>
+
+<script>
+document.documentElement.classList.add("js");
+(function(){
+  var els=[].slice.call(document.querySelectorAll(".reveal"));
+  if(!("IntersectionObserver" in window)){els.forEach(function(el){el.classList.add("in")});return}
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting)return;
+      var sib=[].slice.call(en.target.parentNode.querySelectorAll(":scope > .reveal"));
+      en.target.style.transitionDelay=(Math.max(0,sib.indexOf(en.target))*70)+"ms";
+      en.target.classList.add("in");io.unobserve(en.target);
+    });
+  },{rootMargin:"0px 0px -8% 0px"});
+  els.forEach(function(el){io.observe(el)});
+  document.querySelectorAll(".product img").forEach(function(img){
+    function off(){img.closest(".product").classList.add("noimg")}
+    if(img.complete&&!img.naturalWidth)off();else img.addEventListener("error",off,{once:true});
+  });
+  // A failed hotlinked image falls back to the low-res YouTube thumb rather than a broken icon
+  document.querySelectorAll('img[src*="maxresdefault"]').forEach(function(img){
+    img.addEventListener("error",function(){img.src=img.src.replace("maxresdefault","hqdefault")},{once:true});
+  });
+})();
+</script>
+</body>
+</html>
