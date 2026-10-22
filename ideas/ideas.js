@@ -140,17 +140,28 @@ async function loadMonthly() {
     const wins = past.docs.map((d) => d.data());
     const champ = wins[0] && wins[0].month < thisMonth ? wins[0] : null;
     $("champ").hidden = !champ;
-    if (champ) $("champ").innerHTML = `<p class="champ-k">Idea of the Month · ${esc(fmtMonth(champ.month))}</p>
+    const watch = champ && champ.videoId && `https://www.youtube.com/watch?v=${esc(champ.videoId)}`;
+    $("champ").classList.toggle("has-thumb", !!watch);
+    if (champ) $("champ").innerHTML = `<div class="champ-text"><p class="champ-k">Idea of the Month · ${esc(fmtMonth(champ.month))}</p>
       <p class="champ-t">${esc(champ.title)}</p>
       <p class="champ-m">${[CH[champ.channel],
         champ.gained != null && `+${champ.gained} votes in ${fmtMonth(champ.month, { month: "long" })}`,
         champ.authorName && `suggested by ${champ.authorName}`].filter(Boolean).map(esc).join(" · ")}</p>
-      ${champ.videoId ? `<a class="btn champ-watch" href="https://www.youtube.com/watch?v=${esc(champ.videoId)}">Watch the video</a>` : ""}
+      ${watch ? `<a class="btn champ-watch" href="${watch}">Watch the video</a>` : ""}
       ${isAdmin() ? `<form class="champ-admin" data-month="${esc(champ.month)}">
         <label for="champ-url">${champ.videoId ? "Change the" : "Link the"} video for this winner</label>
         <div><input id="champ-url" name="url" placeholder="YouTube link, e.g. https://youtu.be/5IUXc8rFqao" required>
         <button class="btn sm" type="submit">Save video</button></div>
-        <p class="champ-admin-msg" role="status"></p></form>` : ""}`;
+        <p class="champ-admin-msg" role="status"></p></form>` : ""}</div>
+      ${watch ? `<a class="panel champ-thumb" href="${watch}" aria-label="Watch ${esc(champ.title)}">
+        <img src="https://i.ytimg.com/vi/${esc(champ.videoId)}/maxresdefault.jpg" alt="${esc(champ.title)}" width="1280" height="720">
+        <span class="play" aria-hidden="true"></span></a>` : ""}`;
+    // maxres doesn't exist for every upload; YouTube serves a 120px grey placeholder instead of a 404
+    $("champ").querySelectorAll(".champ-thumb img").forEach((img) => {
+      const low = () => { if (!img.src.includes("hqdefault")) img.src = img.src.replace("maxresdefault", "hqdefault"); };
+      img.addEventListener("error", low, { once: true });
+      img.addEventListener("load", () => { if (img.naturalWidth <= 120) low(); }, { once: true });
+    });
     $("winner").innerHTML = `<p class="w-day">Leading ${esc(fmtMonth(thisMonth, { month: "long" }))} so far</p>` +
       (leaders.length ? `<ol class="leaders">${leaders.map((l, i) => `<li${i ? "" : ' class="lead"'}>
           <span class="w-title">${esc(l.title)}</span>

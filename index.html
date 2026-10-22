@@ -136,6 +136,11 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .pitch p{max-width:34em;margin-top:14px;font-weight:700}
 .pitch .champ-line{display:inline-block;margin-top:22px;background:var(--yellow);color:var(--ink);padding:.6em .9em;max-width:none}
 .pitch .champ-line strong{font:400 1.5rem/1.1 var(--display);letter-spacing:.02em}
+.pitch-grid:has(.champ-thumb){display:grid;grid-template-columns:1.15fr 1fr;align-items:center;gap:clamp(32px,5vw,72px)}
+.pitch .champ-thumb{color:var(--ink);transform:rotate(1.2deg)}
+.pitch .btn{box-shadow:5px 5px 0 var(--paper)} /* taste-skill-ignore: comic print offset */
+@media (max-width:860px){.pitch-grid:has(.champ-thumb){grid-template-columns:1fr}}
+.pitch p:has(.btn){margin-top:26px}
 
 /* Store */
 .store{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
@@ -328,8 +333,9 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
       <h2 id="h-pitch" class="reveal">Pick the next fight</h2>
       <p class="reveal">Suggest a matchup for any of the three channels and vote for the ones you want to see. The most-voted idea each month becomes the Idea of the Month.</p>
       <p class="champ-line reveal">September's Idea of the Month: <a href="https://www.youtube.com/watch?v=5IUXc8rFqao"><strong>Could Robocop SOLO Every Batman Villain?</strong></a></p>
+      <p><a class="btn reveal" href="ideas/">Submit and vote</a></p>
     </div>
-    <a class="btn reveal" href="ideas/">Submit and vote</a>
+    <a class="panel vid champ-thumb reveal" href="https://www.youtube.com/watch?v=5IUXc8rFqao"><img src="https://i.ytimg.com/vi/5IUXc8rFqao/maxresdefault.jpg" alt="Could Robocop SOLO Every Batman Villain?" loading="lazy" width="1280" height="720"><span class="play" aria-hidden="true"></span><span class="caption">Idea of the Month: watch it</span></a>
   </div>
 </section>
 

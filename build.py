@@ -286,6 +286,17 @@ def champ_html(w):
     return f'<p class="champ-line reveal">{e(month)}\'s Idea of the Month: {title}</p>'
 
 
+def champ_aside(w):
+    """Right side of the ideas call-out: the winning video's thumbnail, else the button."""
+    if not (w and w["videoId"]):
+        return '<a class="btn reveal" href="ideas/">Submit and vote</a>'
+    v = e(w["videoId"])
+    return (f'<a class="panel vid champ-thumb reveal" href="https://www.youtube.com/watch?v={v}">'
+            f'<img src="{e(thumb_url(w["videoId"]))}" alt="{e(w["title"])}" loading="lazy" width="1280" height="720">'
+            f'<span class="play" aria-hidden="true"></span>'
+            f'<span class="caption">Idea of the Month: watch it</span></a>')
+
+
 def render(data, champ=None):
     hero_thumbs = [data[c["key"]][0] for c in CHANNELS]
     strip = "".join(
@@ -297,7 +308,10 @@ def render(data, champ=None):
     built = datetime.now().strftime("%-d %B %Y")
     return (TEMPLATE.replace("%%STRIP%%", strip).replace("%%SECTIONS%%", sections)
             .replace("%%PRODUCTS%%", products).replace("%%DESIGN%%", DESIGN).replace("%%STORE%%", STORE)
-            .replace("%%BUILT%%", built).replace("%%CHAMP%%", champ_html(champ)).replace("%%TITLE%%", e(TITLE)).replace("%%DESC%%", e(DESC))
+            .replace("%%BUILT%%", built).replace("%%CHAMP%%", champ_html(champ))
+            .replace("%%CHAMPASIDE%%", champ_aside(champ))
+            .replace("%%CHAMPBTN%%", '<p><a class="btn reveal" href="ideas/">Submit and vote</a></p>'
+                     if champ and champ["videoId"] else "").replace("%%TITLE%%", e(TITLE)).replace("%%DESC%%", e(DESC))
             .replace("%%JSONLD%%", json_ld()).replace("%%SITE%%", SITE))
 
 
@@ -439,6 +453,11 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .pitch p{max-width:34em;margin-top:14px;font-weight:700}
 .pitch .champ-line{display:inline-block;margin-top:22px;background:var(--yellow);color:var(--ink);padding:.6em .9em;max-width:none}
 .pitch .champ-line strong{font:400 1.5rem/1.1 var(--display);letter-spacing:.02em}
+.pitch-grid:has(.champ-thumb){display:grid;grid-template-columns:1.15fr 1fr;align-items:center;gap:clamp(32px,5vw,72px)}
+.pitch .champ-thumb{color:var(--ink);transform:rotate(1.2deg)}
+.pitch .btn{box-shadow:5px 5px 0 var(--paper)} /* taste-skill-ignore: comic print offset */
+@media (max-width:860px){.pitch-grid:has(.champ-thumb){grid-template-columns:1fr}}
+.pitch p:has(.btn){margin-top:26px}
 
 /* Store */
 .store{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
@@ -544,8 +563,9 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
       <h2 id="h-pitch" class="reveal">Pick the next fight</h2>
       <p class="reveal">Suggest a matchup for any of the three channels and vote for the ones you want to see. The most-voted idea each month becomes the Idea of the Month.</p>
       %%CHAMP%%
+      %%CHAMPBTN%%
     </div>
-    <a class="btn reveal" href="ideas/">Submit and vote</a>
+    %%CHAMPASIDE%%
   </div>
 </section>
 
@@ -653,6 +673,9 @@ IDEAS_TEMPLATE = '''<!doctype html>
 .champ-k{font:400 1.6rem/1 var(--display);letter-spacing:.03em;display:inline-block;background:var(--ink);color:var(--yellow);padding:.35em .6em .25em}
 .champ-t{font:400 clamp(2.4rem,5vw,4.4rem)/1 var(--display);letter-spacing:.01em;margin-block:16px 10px}
 .champ-m{font-weight:800}
+.champ.has-thumb{display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(24px,4vw,48px);align-items:center}
+.champ-thumb{transform:rotate(1.5deg)}
+@media (max-width:860px){.champ.has-thumb{grid-template-columns:1fr}}
 .champ-watch{margin-top:18px}
 .champ-admin{margin-top:22px;padding-top:18px;border-top:3px dashed var(--ink)}
 .champ-admin label{display:block;font-weight:800;margin-bottom:8px}
