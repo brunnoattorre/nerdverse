@@ -227,7 +227,10 @@ def product_panel(p, i):
 
 # Public web config of the Firebase project behind the ideas board (safe to ship:
 # access is enforced by firestore.rules, not by keeping these secret).
-FIREBASE = {"apiKey": "", "authDomain": "", "projectId": "", "appId": ""}
+FIREBASE = {"apiKey": "AIzaSyAuGrHNVEh7WS8P6A474kPmf13LB8-iYlo",
+            "authDomain": "nerdscience-ideas.firebaseapp.com",
+            "projectId": "nerdscience-ideas",
+            "appId": "1:112765892803:web:b437786203bcc70a02ca76"}
 ADMINS = ["brattorre@gmail.com"]  # must match isAdmin() in firestore.rules
 
 TITLE = "NerdScience Official: NerdScience, NerdHistory & NerdNature"
