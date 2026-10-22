@@ -29,11 +29,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Fetch latest videos and render
-        env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        run: python3 build.py
-
       - name: Sign in to Google Cloud (keyless, via workload identity)
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         continue-on-error: true
@@ -42,12 +37,17 @@ jobs:
           workload_identity_provider: projects/112765892803/locations/global/workloadIdentityPools/github/providers/github
           service_account: ideas-winner@nerdscience-ideas.iam.gserviceaccount.com
 
-      - name: Pick the daily ideas winner
+      - name: Update Idea of the Month standings (and pick last month's winner)
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         continue-on-error: true
         run: |
           pip install --quiet google-cloud-firestore
           python3 daily_winner.py
+
+      - name: Fetch latest videos and render
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python3 build.py
 
       - name: Commit refreshed data
         if: github.event_name != 'push'

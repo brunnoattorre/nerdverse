@@ -1,9 +1,9 @@
-// Ideas board: Google sign-in, submit (moderated), one vote per person per idea,
-// daily winners. All access control lives in firestore.rules; this file is only UI.
+// Ideas board: Google sign-in, submit (moderated), one vote per person per idea
+// (any number of ideas), Idea of the Month. All access control lives in firestore.rules; this file is only UI.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, doc, query, where, orderBy, limit, getDocs, addDoc, updateDoc,
+import { getFirestore, collection, doc, query, where, orderBy, limit, getDoc, getDocs, addDoc, updateDoc,
   setDoc, writeBatch, increment, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -125,23 +125,33 @@ async function toggleVote(li) {
   } finally { busy.delete(id); }
 }
 
-// ── Winners ───────────────────────────────────────────────────────────────
-function fmtDay(day) {
-  return new Date(day + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-async function loadWinners() {
+// ── Idea of the month ─────────────────────────────────────────────────────
+const fmtMonth = (m, opts = { month: "long", year: "numeric" }) =>
+  new Date(m + "-15T12:00:00Z").toLocaleDateString("en-US", opts);
+async function loadMonthly() {
   try {
-    const snap = await getDocs(query(collection(db, "winners"), orderBy("day", "desc"), limit(8)));
-    if (snap.empty) {
-      $("winner").innerHTML = `<p class="w-none">The first winner is picked tomorrow at 9:30 AM ET. Get voting.</p>`;
-      return;
-    }
-    const [top, ...rest] = snap.docs.map((d) => d.data());
-    $("winner").innerHTML = `<p class="w-day">Winner for ${esc(fmtDay(top.day))}</p>
-      <p class="w-title">${esc(top.title)}</p>
-      <p class="w-meta">${esc(CH[top.channel] || "")} · +${top.gained} votes that day · suggested by ${esc(top.authorName)}</p>`;
-    $("winners").innerHTML = rest.map((w) =>
-      `<li><span class="w-d">${esc(fmtDay(w.day))}</span> ${esc(w.title)} <span class="w-g">+${w.gained}</span></li>`).join("");
+    const [st, past] = await Promise.all([
+      getDoc(doc(db, "standings", "current")),
+      getDocs(query(collection(db, "winners"), orderBy("month", "desc"), limit(6))),
+    ]);
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    const s = st.exists() ? st.data() : null;
+    const leaders = s && s.month === thisMonth ? s.leaders : [];
+    const wins = past.docs.map((d) => d.data());
+    const champ = wins[0] && wins[0].month < thisMonth ? wins[0] : null;
+    $("champ").hidden = !champ;
+    if (champ) $("champ").innerHTML = `<p class="champ-k">Idea of the Month · ${esc(fmtMonth(champ.month))}</p>
+      <p class="champ-t">${esc(champ.title)}</p>
+      <p class="champ-m">${esc(CH[champ.channel] || "")} · +${champ.gained} votes in ${esc(fmtMonth(champ.month, { month: "long" }))} · suggested by ${esc(champ.authorName)}</p>`;
+    $("winner").innerHTML = `<p class="w-day">Leading ${esc(fmtMonth(thisMonth, { month: "long" }))} so far</p>` +
+      (leaders.length ? `<ol class="leaders">${leaders.map((l, i) => `<li${i ? "" : ' class="lead"'}>
+          <span class="w-title">${esc(l.title)}</span>
+          <span class="w-meta">${esc(CH[l.channel] || "")} · +${l.gained} votes this month · by ${esc(l.authorName)}</span></li>`).join("")}</ol>
+          <p class="w-note">Standings update every morning. The winner is announced on the 1st.</p>`
+        : `<p class="w-none">No votes this month yet. The idea with the most votes by the end of the month wins.</p>`);
+    $("winners").innerHTML = wins.slice(champ ? 1 : 0).map((w) =>
+      `<li><span class="w-d">${esc(fmtMonth(w.month, { month: "short", year: "numeric" }))}</span> ${esc(w.title)} <span class="w-g">+${w.gained}</span></li>`).join("");
+    $("winners-h").hidden = wins.length <= (champ ? 1 : 0);
   } catch (e) { console.error(e); }
 }
 
@@ -207,7 +217,7 @@ document.querySelectorAll("[data-sort]").forEach((b) => b.addEventListener("clic
   loadIdeas();
 }));
 
-loadWinners();
+loadMonthly();
 onAuthStateChanged(auth, async (u) => {
   user = u;
   renderAuth();

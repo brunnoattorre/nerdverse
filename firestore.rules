@@ -65,7 +65,11 @@ service cloud.firestore {
     }
 
     // Written only by the daily job (service account, which bypasses rules).
-    match /winners/{day} {
+    match /winners/{month} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /standings/{doc} {
       allow read: if true;
       allow write: if false;
     }

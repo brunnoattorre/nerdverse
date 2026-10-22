@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pick the next fight: NerdScience ideas board</title>
-<meta name="description" content="Suggest a matchup for NerdScience, NerdHistory or NerdNature and vote for the ideas you want to see. A new winner every day.">
+<meta name="description" content="Suggest a matchup for NerdScience, NerdHistory or NerdNature and vote for the ideas you want to see. A new Idea of the Month every month.">
 <link rel="canonical" href="https://nerdscienceofficial.com/ideas/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NerdScience">
 <meta property="og:url" content="https://nerdscienceofficial.com/ideas/">
 <meta property="og:title" content="Pick the next NerdScience fight">
-<meta property="og:description" content="Suggest a matchup and vote for the ideas you want to see. A new winner every day.">
+<meta property="og:description" content="Suggest a matchup and vote for the ideas you want to see. A new Idea of the Month every month.">
 <meta property="og:image" content="https://nerdscienceofficial.com/assets/og.jpg?v=2">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../favicon.ico" sizes="any">
@@ -126,6 +126,8 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .pitch-grid{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
 .pitch h2{font-size:clamp(3rem,6vw,5.5rem);color:var(--yellow)}
 .pitch p{max-width:34em;margin-top:14px;font-weight:700}
+.pitch .champ-line{display:inline-block;margin-top:22px;background:var(--yellow);color:var(--ink);padding:.6em .9em;max-width:none}
+.pitch .champ-line strong{font:400 1.5rem/1.1 var(--display);letter-spacing:.02em}
 
 /* Store */
 .store{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
@@ -189,13 +191,25 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .btn{cursor:pointer}
 .btn.sm{font-size:1.15rem;padding:.45em .8em .35em;box-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic print offset */
 .top-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,56px);padding-block:clamp(56px,7vw,96px)}
+.champ-wrap:has(.champ:not([hidden])){padding-top:clamp(48px,6vw,80px)}
+.champ{background:var(--yellow);border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ink);padding:clamp(22px,3vw,36px);transform:rotate(-.6deg)} /* taste-skill-ignore: comic print offset */
+.champ-k{font:400 1.6rem/1 var(--display);letter-spacing:.03em;display:inline-block;background:var(--ink);color:var(--yellow);padding:.35em .6em .25em}
+.champ-t{font:400 clamp(2.4rem,5vw,4.4rem)/1 var(--display);letter-spacing:.01em;margin-block:16px 10px}
+.champ-m{font-weight:800}
 .box{border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ink);padding:clamp(20px,3vw,32px)} /* taste-skill-ignore: comic print offset */
 .box h2{font-size:clamp(2.2rem,4vw,3.2rem);margin-bottom:16px}
 .winbox{background:var(--green);color:var(--paper)}
 .winbox h2{color:var(--yellow);text-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic ink offset on display type */
 .w-day{font-weight:800}
 .w-title{font:400 clamp(2rem,3.6vw,3rem)/1 var(--display);letter-spacing:.02em;margin-block:8px 10px;color:var(--yellow)}
-.w-meta,.w-none{font-weight:700}
+.w-meta,.w-none,.w-note{font-weight:700}
+.w-meta{display:block}
+.leaders{list-style:none;padding:0;display:grid;gap:12px;margin-top:10px}
+.leaders li{background:rgba(0,0,0,.18);padding:10px 14px}
+.leaders li .w-title{font-size:1.5rem;margin:0 0 4px;display:block}
+.leaders li.lead .w-title{font-size:clamp(1.9rem,3.2vw,2.6rem)}
+.w-note{font-size:.92rem;margin-top:12px}
+.w-past{font-size:1.6rem;color:var(--yellow);margin-top:24px}
 #winners{list-style:none;padding:0;margin-top:22px;display:grid;gap:8px}
 #winners li{background:rgba(0,0,0,.18);padding:8px 12px;font-weight:700}
 .w-d{display:inline-block;min-width:4.5em;color:var(--yellow)}
@@ -265,16 +279,19 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 <section class="board-hero" aria-labelledby="h-board">
   <div class="wrap">
     <h1 id="h-board">Pick the next fight</h1>
-    <p class="lede">Suggest a matchup for NerdScience, NerdHistory or NerdNature, then vote for the ideas you want to see. Every day at 9:30 AM ET, the idea that gained the most votes in the last 24 hours wins.</p>
+    <p class="lede">Suggest a matchup for NerdScience, NerdHistory or NerdNature, then vote for every idea you want to see. At the end of each month, the idea that gained the most votes that month becomes the Idea of the Month.</p>
     <div id="auth"><span class="who">Loading…</span></div>
     <p id="board-status" role="status"></p>
   </div>
 </section>
 
+<div class="wrap champ-wrap"><section id="champ" class="champ" hidden aria-label="Last month's winner"></section></div>
+
 <div class="wrap top-grid">
   <section class="box winbox" aria-labelledby="h-win">
-    <h2 id="h-win">Daily winner</h2>
+    <h2 id="h-win">Idea of the month</h2>
     <div id="winner"><p class="w-none">Loading…</p></div>
+    <h3 id="winners-h" class="w-past" hidden>Past winners</h3>
     <ul id="winners"></ul>
   </section>
 
@@ -292,7 +309,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
       <input id="f-title" name="title" maxlength="100" minlength="8" required placeholder="Could Deadpool survive the Battle of Stalingrad?">
       <label for="f-details">Why it would be epic (optional)</label>
       <textarea id="f-details" name="details" maxlength="500"></textarea>
-      <p class="hint">Ideas show up once they're approved. One vote per person per idea.</p>
+      <p class="hint">Ideas show up once they're approved. Vote for as many ideas as you like, once each.</p>
       <button class="btn" type="submit">Submit idea</button>
       <p id="submit-msg" role="status"></p>
     </form>

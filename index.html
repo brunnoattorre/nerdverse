@@ -134,6 +134,8 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .pitch-grid{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
 .pitch h2{font-size:clamp(3rem,6vw,5.5rem);color:var(--yellow)}
 .pitch p{max-width:34em;margin-top:14px;font-weight:700}
+.pitch .champ-line{display:inline-block;margin-top:22px;background:var(--yellow);color:var(--ink);padding:.6em .9em;max-width:none}
+.pitch .champ-line strong{font:400 1.5rem/1.1 var(--display);letter-spacing:.02em}
 
 /* Store */
 .store{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
@@ -324,7 +326,8 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
   <div class="wrap pitch-grid">
     <div>
       <h2 id="h-pitch" class="reveal">Pick the next fight</h2>
-      <p class="reveal">Suggest a matchup for any of the three channels and vote for the ones you want to see. Every day the idea that gains the most votes wins.</p>
+      <p class="reveal">Suggest a matchup for any of the three channels and vote for the ones you want to see. The most-voted idea each month becomes the Idea of the Month.</p>
+      
     </div>
     <a class="btn reveal" href="ideas/">Submit and vote</a>
   </div>
