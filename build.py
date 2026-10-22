@@ -654,6 +654,11 @@ IDEAS_TEMPLATE = '''<!doctype html>
 .champ-t{font:400 clamp(2.4rem,5vw,4.4rem)/1 var(--display);letter-spacing:.01em;margin-block:16px 10px}
 .champ-m{font-weight:800}
 .champ-watch{margin-top:18px}
+.champ-admin{margin-top:22px;padding-top:18px;border-top:3px dashed var(--ink)}
+.champ-admin label{display:block;font-weight:800;margin-bottom:8px}
+.champ-admin div{display:flex;gap:10px;flex-wrap:wrap}
+.champ-admin input{flex:1 1 280px;font:500 1rem/1.4 var(--text);padding:10px 12px;border:3px solid var(--ink);background:#fff;color:var(--ink)}
+.champ-admin-msg{font-weight:800;margin-top:8px}
 .box{border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ink);padding:clamp(20px,3vw,32px)} /* taste-skill-ignore: comic print offset */
 .box h2{font-size:clamp(2.2rem,4vw,3.2rem);margin-bottom:16px}
 .winbox{background:var(--green);color:var(--paper)}

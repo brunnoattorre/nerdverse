@@ -145,7 +145,12 @@ async function loadMonthly() {
       <p class="champ-m">${[CH[champ.channel],
         champ.gained != null && `+${champ.gained} votes in ${fmtMonth(champ.month, { month: "long" })}`,
         champ.authorName && `suggested by ${champ.authorName}`].filter(Boolean).map(esc).join(" · ")}</p>
-      ${champ.videoId ? `<a class="btn champ-watch" href="https://www.youtube.com/watch?v=${esc(champ.videoId)}">Watch the video</a>` : ""}`;
+      ${champ.videoId ? `<a class="btn champ-watch" href="https://www.youtube.com/watch?v=${esc(champ.videoId)}">Watch the video</a>` : ""}
+      ${isAdmin() ? `<form class="champ-admin" data-month="${esc(champ.month)}">
+        <label for="champ-url">${champ.videoId ? "Change the" : "Link the"} video for this winner</label>
+        <div><input id="champ-url" name="url" placeholder="YouTube link, e.g. https://youtu.be/5IUXc8rFqao" required>
+        <button class="btn sm" type="submit">Save video</button></div>
+        <p class="champ-admin-msg" role="status"></p></form>` : ""}`;
     $("winner").innerHTML = `<p class="w-day">Leading ${esc(fmtMonth(thisMonth, { month: "long" }))} so far</p>` +
       (leaders.length ? `<ol class="leaders">${leaders.map((l, i) => `<li${i ? "" : ' class="lead"'}>
           <span class="w-title">${esc(l.title)}</span>
@@ -211,10 +216,37 @@ async function moderate(btn) {
   } catch (e) { console.error(e); btn.disabled = false; }
 }
 
+// Accepts watch?v=, youtu.be/, /shorts/, /live/, /embed/ links or a bare 11-character id.
+function videoIdFrom(text) {
+  const s = text.trim();
+  if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+  try {
+    const u = new URL(s);
+    const v = u.searchParams.get("v") || u.pathname.split("/").filter(Boolean).pop();
+    return /^[A-Za-z0-9_-]{11}$/.test(v || "") ? v : null;
+  } catch { return null; }
+}
+
+async function linkVideo(form) {
+  const msg = form.querySelector(".champ-admin-msg");
+  const id = videoIdFrom(form.url.value);
+  if (!id) return say(msg, "That doesn't look like a YouTube video link.", true);
+  form.querySelector("button").disabled = true;
+  try {
+    await updateDoc(doc(db, "winners", form.dataset.month), { videoId: id });
+    loadMonthly();
+  } catch (e) {
+    console.error(e);
+    say(msg, "Couldn't save the video. Are you signed in as the admin?", true);
+    form.querySelector("button").disabled = false;
+  }
+}
+
 // ── Wiring ────────────────────────────────────────────────────────────────
 $("ideas").addEventListener("click", (e) => { const li = e.target.closest(".vote")?.closest(".idea"); if (li) toggleVote(li); });
 $("queue").addEventListener("click", (e) => { const b = e.target.closest("button[data-act]"); if (b) moderate(b); });
 $("submit-form").addEventListener("submit", submitIdea);
+$("champ").addEventListener("submit", (e) => { e.preventDefault(); linkVideo(e.target); });
 document.querySelectorAll("[data-sort]").forEach((b) => b.addEventListener("click", () => {
   sort = b.dataset.sort;
   document.querySelectorAll("[data-sort]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
@@ -229,4 +261,5 @@ onAuthStateChanged(auth, async (u) => {
   loadIdeas();
   loadMine().catch(console.error);
   loadQueue().catch(console.error);
+  loadMonthly();  // re-render so the admin sees the link-video box
 });

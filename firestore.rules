@@ -64,10 +64,15 @@ service cloud.firestore {
              == get(idea(resource.data.ideaId)).data.votes - 1;
     }
 
-    // Written only by the daily job (service account, which bypasses rules).
+    // Created only by the monthly job (service account, which bypasses rules).
+    // The admin may attach the YouTube video made from the winning idea.
     match /winners/{month} {
       allow read: if true;
-      allow write: if false;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['videoId'])
+        && request.resource.data.videoId is string
+        && request.resource.data.videoId.matches('[A-Za-z0-9_-]{11}');
+      allow create, delete: if false;
     }
     match /standings/{doc} {
       allow read: if true;
