@@ -34,6 +34,21 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python3 build.py
 
+      - name: Sign in to Google Cloud (keyless, via workload identity)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/112765892803/locations/global/workloadIdentityPools/github/providers/github
+          service_account: ideas-winner@nerdscience-ideas.iam.gserviceaccount.com
+
+      - name: Pick the daily ideas winner
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        run: |
+          pip install --quiet google-cloud-firestore
+          python3 daily_winner.py
+
       - name: Commit refreshed data
         if: github.event_name != 'push'
         run: |
@@ -43,7 +58,7 @@ jobs:
           git diff --cached --quiet || { git commit -m "Daily refresh: latest videos"; git push; }
 
       - name: Stage public files
-        run: mkdir -p public && cp -R index.html favicon.ico robots.txt sitemap.xml assets public/
+        run: mkdir -p public && cp -R index.html favicon.ico robots.txt sitemap.xml assets ideas public/
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

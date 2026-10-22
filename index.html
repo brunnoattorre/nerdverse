@@ -129,6 +129,12 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .vid.small .play::after{left:13px;top:8px;border-width:8px 0 8px 12px}
 .more{display:inline-block;margin-top:26px;font-weight:800;text-underline-offset:4px}
 
+/* Ideas call-out */
+.pitch{background:var(--ink);color:var(--paper);border-top:var(--line) solid var(--ink);padding-block:clamp(64px,8vw,104px)}
+.pitch-grid{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
+.pitch h2{font-size:clamp(3rem,6vw,5.5rem);color:var(--yellow)}
+.pitch p{max-width:34em;margin-top:14px;font-weight:700}
+
 /* Store */
 .store{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
 .store-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:48px}
@@ -190,6 +196,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
       <li><a href="#science">NerdScience</a></li>
       <li><a href="#history">NerdHistory</a></li>
       <li><a href="#nature">NerdNature</a></li>
+      <li><a href="ideas/">Ideas</a></li>
       <li><a href="#store">Store</a></li>
     </ul></nav>
   </div>
@@ -310,6 +317,16 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 </a></div>
       <a class="more" href="https://www.youtube.com/@NerdNatureNs/videos">All NerdNature videos</a>
     </div>
+  </div>
+</section>
+
+<section class="pitch" aria-labelledby="h-pitch">
+  <div class="wrap pitch-grid">
+    <div>
+      <h2 id="h-pitch" class="reveal">Pick the next fight</h2>
+      <p class="reveal">Suggest a matchup for any of the three channels and vote for the ones you want to see. Every day the idea that gains the most votes wins.</p>
+    </div>
+    <a class="btn reveal" href="ideas/">Submit and vote</a>
   </div>
 </section>
 

@@ -4,3 +4,5 @@ public/
 __pycache__/
 .DS_Store
 .fonts/
+tests/node_modules/
+tests/*.log

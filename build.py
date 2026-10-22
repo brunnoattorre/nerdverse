@@ -225,6 +225,11 @@ def product_panel(p, i):
 </a>'''
 
 
+# Public web config of the Firebase project behind the ideas board (safe to ship:
+# access is enforced by firestore.rules, not by keeping these secret).
+FIREBASE = {"apiKey": "", "authDomain": "", "projectId": "", "appId": ""}
+ADMINS = ["brattorre@gmail.com"]  # must match isAdmin() in firestore.rules
+
 TITLE = "NerdScience Official: NerdScience, NerdHistory & NerdNature"
 DESC = ("NerdScience drops superheroes, historical armies and apex predators into impossible "
         "fights and uses real science to call the winner. Watch the latest episodes and shop the merch.")
@@ -250,6 +255,7 @@ def write_seo_files():
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         f"  <url><loc>{SITE}</loc><lastmod>{datetime.now():%Y-%m-%d}</lastmod><changefreq>daily</changefreq></url>\n"
+        f"  <url><loc>{SITE}ideas/</loc><lastmod>{datetime.now():%Y-%m-%d}</lastmod><changefreq>daily</changefreq></url>\n"
         "</urlset>\n")
 
 
@@ -399,6 +405,12 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .vid.small .play::after{left:13px;top:8px;border-width:8px 0 8px 12px}
 .more{display:inline-block;margin-top:26px;font-weight:800;text-underline-offset:4px}
 
+/* Ideas call-out */
+.pitch{background:var(--ink);color:var(--paper);border-top:var(--line) solid var(--ink);padding-block:clamp(64px,8vw,104px)}
+.pitch-grid{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
+.pitch h2{font-size:clamp(3rem,6vw,5.5rem);color:var(--yellow)}
+.pitch p{max-width:34em;margin-top:14px;font-weight:700}
+
 /* Store */
 .store{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
 .store-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:48px}
@@ -460,6 +472,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
       <li><a href="#science">NerdScience</a></li>
       <li><a href="#history">NerdHistory</a></li>
       <li><a href="#nature">NerdNature</a></li>
+      <li><a href="ideas/">Ideas</a></li>
       <li><a href="#store">Store</a></li>
     </ul></nav>
   </div>
@@ -495,6 +508,16 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 </section>
 
 %%SECTIONS%%
+
+<section class="pitch" aria-labelledby="h-pitch">
+  <div class="wrap pitch-grid">
+    <div>
+      <h2 id="h-pitch" class="reveal">Pick the next fight</h2>
+      <p class="reveal">Suggest a matchup for any of the three channels and vote for the ones you want to see. Every day the idea that gains the most votes wins.</p>
+    </div>
+    <a class="btn reveal" href="ideas/">Submit and vote</a>
+  </div>
+</section>
 
 <section class="store dots" id="store" aria-labelledby="h-store">
   <div class="wrap">
@@ -555,6 +578,199 @@ document.documentElement.classList.add("js");
 '''
 
 
+def render_ideas():
+    css = TEMPLATE[TEMPLATE.index("<style>") + 7:TEMPLATE.index("</style>")]
+    cfg = json.dumps({"firebase": FIREBASE, "admins": ADMINS}).replace("</", "<\\/")
+    return (IDEAS_TEMPLATE.replace("%%CSS%%", css).replace("%%CFG%%", cfg)
+            .replace("%%SITE%%", SITE).replace("%%STORE%%", STORE))
+
+
+IDEAS_TEMPLATE = '''<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pick the next fight: NerdScience ideas board</title>
+<meta name="description" content="Suggest a matchup for NerdScience, NerdHistory or NerdNature and vote for the ideas you want to see. A new winner every day.">
+<link rel="canonical" href="%%SITE%%ideas/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NerdScience">
+<meta property="og:url" content="%%SITE%%ideas/">
+<meta property="og:title" content="Pick the next NerdScience fight">
+<meta property="og:description" content="Suggest a matchup and vote for the ideas you want to see. A new winner every day.">
+<meta property="og:image" content="%%SITE%%assets/og.jpg?v=2">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/icon-32.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<meta name="theme-color" content="#141414">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barlow:wght@500;700;800&display=swap" rel="stylesheet">
+<style>%%CSS%%
+/* Ideas board */
+.board-hero{background-color:var(--red);color:var(--paper);border-bottom:var(--line) solid var(--ink);padding-block:clamp(48px,7vw,88px)}
+.board-hero h1{font-size:clamp(3.4rem,7.5vw,7.5rem);color:var(--yellow);text-shadow:5px 5px 0 var(--ink)} /* taste-skill-ignore: comic ink offset on display type */
+.board-hero .lede{font-size:clamp(1.1rem,1.6vw,1.35rem);font-weight:700;max-width:36em;margin-block:20px 28px}
+#auth{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.who{font-weight:700}
+.linkbtn{background:none;border:0;color:inherit;font:800 1rem var(--text);text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:0}
+.btn{cursor:pointer}
+.btn.sm{font-size:1.15rem;padding:.45em .8em .35em;box-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic print offset */
+.top-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,56px);padding-block:clamp(56px,7vw,96px)}
+.box{border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ink);padding:clamp(20px,3vw,32px)} /* taste-skill-ignore: comic print offset */
+.box h2{font-size:clamp(2.2rem,4vw,3.2rem);margin-bottom:16px}
+.winbox{background:var(--green);color:var(--paper)}
+.winbox h2{color:var(--yellow);text-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic ink offset on display type */
+.w-day{font-weight:800}
+.w-title{font:400 clamp(2rem,3.6vw,3rem)/1 var(--display);letter-spacing:.02em;margin-block:8px 10px;color:var(--yellow)}
+.w-meta,.w-none{font-weight:700}
+#winners{list-style:none;padding:0;margin-top:22px;display:grid;gap:8px}
+#winners li{background:rgba(0,0,0,.18);padding:8px 12px;font-weight:700}
+.w-d{display:inline-block;min-width:4.5em;color:var(--yellow)}
+.w-g{color:var(--yellow)}
+.subbox{background:var(--paper)}
+.subbox label{display:block;font-weight:800;margin:14px 0 6px}
+.subbox input,.subbox textarea,.subbox select{width:100%;font:500 1rem/1.4 var(--text);padding:10px 12px;border:3px solid var(--ink);background:#fff;color:var(--ink)}
+.subbox textarea{min-height:96px;resize:vertical}
+.subbox .btn{margin-top:18px}
+.hint{font-size:.9rem;font-weight:700;margin-top:6px}
+#submit-msg,#board-status{font-weight:800;margin-top:12px}
+.bad{color:var(--red)}
+#mine h3{font-size:1.6rem;margin:24px 0 8px}
+#mine ul{padding-left:1.1em}
+.st{font-weight:800;font-size:.9rem;margin-left:6px}
+.st-pending{color:var(--blue)}
+.st-rejected{color:var(--red)}
+.list-sec{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(56px,7vw,96px)}
+.list-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.list-head h2{font-size:clamp(3rem,6vw,5rem);text-shadow:4px 4px 0 var(--paper)} /* taste-skill-ignore: comic ink offset on display type */
+.sorts{display:flex;gap:10px}
+.sorts button{font:400 1.3rem/1 var(--display);letter-spacing:.03em;padding:.45em .9em .35em;border:3px solid var(--ink);background:var(--paper);cursor:pointer}
+.sorts button[aria-pressed="true"]{background:var(--ink);color:var(--yellow)}
+#ideas{list-style:none;padding:0;display:grid;gap:18px}
+.idea{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;background:var(--paper);border:var(--line) solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:16px 18px} /* taste-skill-ignore: comic print offset */
+.idea:nth-child(odd){transform:rotate(-.3deg)}
+.idea:nth-child(even){transform:rotate(.3deg)}
+.vote{display:grid;justify-items:center;gap:2px;width:64px;padding:10px 0 8px;border:3px solid var(--ink);background:var(--paper);cursor:pointer;transition:transform .15s ease}
+.vote:hover{transform:translateY(-2px)}
+.vote:active{transform:translateY(1px)}
+.vote .arrow{width:0;height:0;border:12px solid transparent;border-bottom:16px solid var(--ink);border-top:0}
+.vote .count{font:400 1.7rem/1 var(--display)}
+.vote.on{background:var(--ink);color:var(--yellow)}
+.vote.on .arrow{border-bottom-color:var(--yellow)}
+.idea h3{font:800 1.25rem/1.3 var(--text);margin:6px 0 4px}
+.idea p{margin-bottom:6px}
+.chtag{display:inline-block;font:400 1.05rem/1 var(--display);letter-spacing:.04em;padding:.3em .55em .2em;color:var(--paper);background:var(--ink)}
+.ch-science .chtag{background:var(--green)}
+.ch-history .chtag{background:var(--red)}
+.ch-nature .chtag{background:var(--blue)}
+.by{font-size:.92rem;font-weight:700}
+.empty{font-weight:800;padding:20px 0}
+.admin{background:var(--ink);color:var(--paper);padding-block:clamp(48px,6vw,80px)}
+.admin h2{font-size:clamp(2.4rem,5vw,4rem);color:var(--yellow);margin-bottom:20px}
+#queue{list-style:none;padding:0;display:grid;gap:14px}
+#queue>li{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#262626;padding:16px 18px}
+#queue strong{display:block;margin:6px 0 2px;font-size:1.1rem}
+.q-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+@media (max-width:860px){.top-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="../">NerdVerse</a>
+    <nav aria-label="Main"><ul>
+      <li><a href="../#science">NerdScience</a></li>
+      <li><a href="../#history">NerdHistory</a></li>
+      <li><a href="../#nature">NerdNature</a></li>
+      <li><a href="./" aria-current="page">Ideas</a></li>
+      <li><a href="../#store">Store</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<main>
+<section class="board-hero" aria-labelledby="h-board">
+  <div class="wrap">
+    <h1 id="h-board">Pick the next fight</h1>
+    <p class="lede">Suggest a matchup for NerdScience, NerdHistory or NerdNature, then vote for the ideas you want to see. Every day at 9:30 AM ET, the idea that gained the most votes in the last 24 hours wins.</p>
+    <div id="auth"><span class="who">Loading…</span></div>
+    <p id="board-status" role="status"></p>
+  </div>
+</section>
+
+<div class="wrap top-grid">
+  <section class="box winbox" aria-labelledby="h-win">
+    <h2 id="h-win">Daily winner</h2>
+    <div id="winner"><p class="w-none">Loading…</p></div>
+    <ul id="winners"></ul>
+  </section>
+
+  <section class="box subbox" aria-labelledby="h-sub">
+    <h2 id="h-sub">Suggest a fight</h2>
+    <p id="submit-locked">Sign in with Google above to suggest an idea. Every idea is checked before it goes up.</p>
+    <form id="submit-form" hidden>
+      <label for="f-channel">Channel</label>
+      <select id="f-channel" name="channel">
+        <option value="science">NerdScience: comics, movies and games</option>
+        <option value="history">NerdHistory: real armies and battles</option>
+        <option value="nature">NerdNature: animals and predators</option>
+      </select>
+      <label for="f-title">The matchup</label>
+      <input id="f-title" name="title" maxlength="100" minlength="8" required placeholder="Could Deadpool survive the Battle of Stalingrad?">
+      <label for="f-details">Why it would be epic (optional)</label>
+      <textarea id="f-details" name="details" maxlength="500"></textarea>
+      <p class="hint">Ideas show up once they're approved. One vote per person per idea.</p>
+      <button class="btn" type="submit">Submit idea</button>
+      <p id="submit-msg" role="status"></p>
+    </form>
+    <div id="mine"></div>
+  </section>
+</div>
+
+<section class="list-sec dots" aria-labelledby="h-list">
+  <div class="wrap">
+    <div class="list-head">
+      <h2 id="h-list">The ideas</h2>
+      <div class="sorts" role="group" aria-label="Sort ideas">
+        <button type="button" data-sort="top" aria-pressed="true">Top</button>
+        <button type="button" data-sort="new" aria-pressed="false">New</button>
+      </div>
+    </div>
+    <ol id="ideas"><li class="empty">Loading ideas…</li></ol>
+  </div>
+</section>
+
+<section class="admin" id="admin" hidden aria-labelledby="h-admin">
+  <div class="wrap">
+    <h2 id="h-admin">Waiting for approval</h2>
+    <ul id="queue"></ul>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="big">NerdVerse</p>
+    <div class="foot-row">
+      <ul>
+        <li><a href="https://www.youtube.com/@NerdScienceOfficial">NerdScience on YouTube</a></li>
+        <li><a href="https://www.youtube.com/@NerdHistoryNs">NerdHistory on YouTube</a></li>
+        <li><a href="https://www.youtube.com/@NerdNatureNs">NerdNature on YouTube</a></li>
+        <li><a href="%%STORE%%">Store</a></li>
+      </ul>
+    </div>
+    <p class="fine">Ideas are suggestions from viewers and are not a promise that a video will be made. The NerdVerse channels are independent, fan-made projects, not affiliated with any rights holder.</p>
+  </div>
+</footer>
+<script>window.NV = %%CFG%%;</script>
+<script type="module" src="ideas.js"></script>
+</body>
+</html>
+'''
+
+
 def main():
     previous = json.loads(CACHE.read_text()) if CACHE.exists() else {}
     if "--offline" in sys.argv:
@@ -566,6 +782,7 @@ def main():
             sys.exit("Not enough videos fetched and no previous run to fall back on; index.html left as is.")
         CACHE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
     (HERE / "index.html").write_text(render(data))
+    (HERE / "ideas" / "index.html").write_text(render_ideas())
     write_seo_files()
     print(f"Wrote {HERE / 'index.html'}")
 

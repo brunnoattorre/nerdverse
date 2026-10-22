@@ -1,0 +1,77 @@
+rules_version = '2';
+
+// Ideas board. The browser talks to Firestore directly, so these rules are the only
+// thing standing between the public and the data. Votes are one document per
+// (user, idea) and every vote is written in the same batch as the idea's counter;
+// each side checks the other, so the counter can only move by one, once per user.
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && request.auth.token.email_verified == true
+        && request.auth.token.email in ['brattorre@gmail.com'];
+    }
+    function notBanned() { return !exists(/databases/$(db)/documents/banned/$(request.auth.uid)); }
+    function idea(id) { return /databases/$(db)/documents/ideas/$(id); }
+    function vote(id) { return /databases/$(db)/documents/votes/$(request.auth.uid + '_' + id); }
+    function goodText(s, lo, hi) { return s is string && s.size() >= lo && s.size() <= hi; }
+
+    match /ideas/{ideaId} {
+      allow read: if resource.data.status == 'approved' || isAdmin()
+        || (signedIn() && resource.data.authorUid == request.auth.uid);
+
+      allow create: if signedIn() && notBanned()
+        && request.resource.data.keys().hasOnly(
+             ['title', 'details', 'channel', 'authorUid', 'authorName', 'status', 'votes', 'createdAt'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.votes == 0
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.channel in ['science', 'history', 'nature']
+        && goodText(request.resource.data.title, 8, 100)
+        && goodText(request.resource.data.details, 0, 500)
+        && goodText(request.resource.data.authorName, 1, 40);
+
+      allow update: if
+        (isAdmin() && request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['status', 'title', 'details', 'channel'])
+         && request.resource.data.status in ['pending', 'approved', 'rejected'])
+        || (signedIn() && notBanned() && resource.data.status == 'approved'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+            && ((request.resource.data.votes == resource.data.votes + 1
+                 && !exists(vote(ideaId)) && existsAfter(vote(ideaId)))
+             || (request.resource.data.votes == resource.data.votes - 1
+                 && exists(vote(ideaId)) && !existsAfter(vote(ideaId)))));
+
+      allow delete: if isAdmin();
+    }
+
+    match /votes/{voteId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+
+      allow create: if signedIn() && notBanned()
+        && request.resource.data.keys().hasOnly(['uid', 'ideaId', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && voteId == request.auth.uid + '_' + request.resource.data.ideaId
+        && request.resource.data.createdAt == request.time
+        && get(idea(request.resource.data.ideaId)).data.status == 'approved'
+        && getAfter(idea(request.resource.data.ideaId)).data.votes
+             == get(idea(request.resource.data.ideaId)).data.votes + 1;
+
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid
+        && getAfter(idea(resource.data.ideaId)).data.votes
+             == get(idea(resource.data.ideaId)).data.votes - 1;
+    }
+
+    // Written only by the daily job (service account, which bypasses rules).
+    match /winners/{day} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /banned/{uid} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,218 @@
+// Ideas board: Google sign-in, submit (moderated), one vote per person per idea,
+// daily winners. All access control lives in firestore.rules; this file is only UI.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, query, where, orderBy, limit, getDocs, addDoc, updateDoc,
+  setDoc, writeBatch, increment, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const CFG = window.NV;
+const $ = (id) => document.getElementById(id);
+const CH = { science: "NerdScience", history: "NerdHistory", nature: "NerdNature" };
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+if (!CFG.firebase.apiKey) {
+  $("board-status").textContent = "The ideas board opens soon. Check back in a day or two.";
+  throw new Error("Firebase not configured");
+}
+
+const app = initializeApp(CFG.firebase);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user = null;
+let myVotes = new Set();
+let sort = "top";
+let busy = new Set();
+
+function shortName(u) {
+  const parts = (u.displayName || "NerdVerse fan").trim().split(/\s+/);
+  return (parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0]}.` : parts[0]).slice(0, 40);
+}
+const isAdmin = () => !!user && user.emailVerified && CFG.admins.includes(user.email);
+function say(el, text, bad) { el.textContent = text; el.classList.toggle("bad", !!bad); }
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+async function signIn() {
+  const provider = new GoogleAuthProvider();
+  try { await signInWithPopup(auth, provider); }
+  catch (e) {
+    if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment")
+      await signInWithRedirect(auth, provider);
+    else if (e.code !== "auth/popup-closed-by-user") say($("board-status"), "Sign-in failed. Please try again.", true);
+  }
+}
+
+function renderAuth() {
+  const box = $("auth");
+  if (user) {
+    box.innerHTML = `<span class="who">Signed in as ${esc(shortName(user))}</span>
+      <button class="linkbtn" id="signout" type="button">Sign out</button>`;
+    $("signout").onclick = () => signOut(auth);
+  } else {
+    box.innerHTML = `<button class="btn" id="signin" type="button">Sign in with Google</button>
+      <span class="who">to submit ideas and vote</span>`;
+    $("signin").onclick = signIn;
+  }
+  $("submit-form").hidden = !user;
+  $("submit-locked").hidden = !!user;
+  $("admin").hidden = !isAdmin();
+}
+
+// ── Ideas list ────────────────────────────────────────────────────────────
+async function loadMyVotes() {
+  myVotes = new Set();
+  if (!user) return;
+  const snap = await getDocs(query(collection(db, "votes"), where("uid", "==", user.uid)));
+  snap.forEach((d) => myVotes.add(d.data().ideaId));
+}
+
+function ideaCard(id, d) {
+  const voted = myVotes.has(id);
+  return `<li class="idea ch-${esc(d.channel)} reveal in" data-id="${esc(id)}">
+    <button class="vote${voted ? " on" : ""}" type="button" aria-pressed="${voted}"
+      aria-label="${voted ? "Remove your vote" : "Vote for this idea"}">
+      <span class="arrow" aria-hidden="true"></span><span class="count">${d.votes || 0}</span>
+    </button>
+    <div class="idea-body">
+      <span class="chtag">${esc(CH[d.channel] || "")}</span>
+      <h3>${esc(d.title)}</h3>
+      ${d.details ? `<p>${esc(d.details)}</p>` : ""}
+      <span class="by">Suggested by ${esc(d.authorName)}</span>
+    </div>
+  </li>`;
+}
+
+async function loadIdeas() {
+  const list = $("ideas");
+  const q = query(collection(db, "ideas"), where("status", "==", "approved"),
+    orderBy(sort === "top" ? "votes" : "createdAt", "desc"), limit(60));
+  try {
+    const snap = await getDocs(q);
+    list.innerHTML = snap.empty
+      ? `<li class="empty">No ideas yet. Be the first to suggest a fight.</li>`
+      : snap.docs.map((d) => ideaCard(d.id, d.data())).join("");
+    $("board-status").textContent = "";
+  } catch (e) {
+    console.error(e);
+    say($("board-status"), "Couldn't load ideas right now. Refresh to try again.", true);
+  }
+}
+
+async function toggleVote(li) {
+  const id = li.dataset.id;
+  if (!user) return signIn();
+  if (busy.has(id)) return;
+  busy.add(id);
+  const btn = li.querySelector(".vote"), count = li.querySelector(".count");
+  const voted = myVotes.has(id);
+  // optimistic update, reverted if the write is refused
+  btn.classList.toggle("on", !voted); btn.setAttribute("aria-pressed", String(!voted));
+  count.textContent = String(+count.textContent + (voted ? -1 : 1));
+  const b = writeBatch(db);
+  const voteRef = doc(db, "votes", `${user.uid}_${id}`), ideaRef = doc(db, "ideas", id);
+  if (voted) { b.delete(voteRef); b.update(ideaRef, { votes: increment(-1) }); }
+  else { b.set(voteRef, { uid: user.uid, ideaId: id, createdAt: serverTimestamp() });
+         b.update(ideaRef, { votes: increment(1) }); }
+  try { await b.commit(); voted ? myVotes.delete(id) : myVotes.add(id); }
+  catch (e) {
+    console.error(e);
+    btn.classList.toggle("on", voted); btn.setAttribute("aria-pressed", String(voted));
+    count.textContent = String(+count.textContent + (voted ? 1 : -1));
+    say($("board-status"), "That vote didn't go through. Refresh and try again.", true);
+  } finally { busy.delete(id); }
+}
+
+// ── Winners ───────────────────────────────────────────────────────────────
+function fmtDay(day) {
+  return new Date(day + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+async function loadWinners() {
+  try {
+    const snap = await getDocs(query(collection(db, "winners"), orderBy("day", "desc"), limit(8)));
+    if (snap.empty) {
+      $("winner").innerHTML = `<p class="w-none">The first winner is picked tomorrow at 9:30 AM ET. Get voting.</p>`;
+      return;
+    }
+    const [top, ...rest] = snap.docs.map((d) => d.data());
+    $("winner").innerHTML = `<p class="w-day">Winner for ${esc(fmtDay(top.day))}</p>
+      <p class="w-title">${esc(top.title)}</p>
+      <p class="w-meta">${esc(CH[top.channel] || "")} · +${top.gained} votes that day · suggested by ${esc(top.authorName)}</p>`;
+    $("winners").innerHTML = rest.map((w) =>
+      `<li><span class="w-d">${esc(fmtDay(w.day))}</span> ${esc(w.title)} <span class="w-g">+${w.gained}</span></li>`).join("");
+  } catch (e) { console.error(e); }
+}
+
+// ── Submitting ────────────────────────────────────────────────────────────
+async function loadMine() {
+  const box = $("mine");
+  if (!user) { box.innerHTML = ""; return; }
+  const snap = await getDocs(query(collection(db, "ideas"), where("authorUid", "==", user.uid), limit(20)));
+  const rows = snap.docs.map((d) => d.data()).filter((d) => d.status !== "approved");
+  box.innerHTML = rows.length ? `<h3>Your submissions</h3><ul>${rows.map((d) =>
+    `<li>${esc(d.title)} <span class="st st-${esc(d.status)}">${d.status === "pending" ? "Waiting for approval" : "Not approved"}</span></li>`
+  ).join("")}</ul>` : "";
+}
+
+async function submitIdea(ev) {
+  ev.preventDefault();
+  const f = ev.target, msg = $("submit-msg");
+  const title = f.title.value.trim(), details = f.details.value.trim();
+  if (title.length < 8) return say(msg, "Give the idea a title of at least 8 characters.", true);
+  f.querySelector("button").disabled = true;
+  try {
+    await addDoc(collection(db, "ideas"), { title, details, channel: f.channel.value,
+      authorUid: user.uid, authorName: shortName(user), status: "pending", votes: 0, createdAt: serverTimestamp() });
+    f.reset();
+    say(msg, "Got it! Your idea will show up here once it's approved.");
+    loadMine();
+  } catch (e) { console.error(e); say(msg, "Couldn't submit that. Check the length and try again.", true); }
+  finally { f.querySelector("button").disabled = false; }
+}
+
+// ── Admin queue ───────────────────────────────────────────────────────────
+async function loadQueue() {
+  if (!isAdmin()) return;
+  const snap = await getDocs(query(collection(db, "ideas"), where("status", "==", "pending"),
+    orderBy("createdAt", "desc"), limit(50)));
+  $("queue").innerHTML = snap.empty ? `<li class="empty">Nothing waiting. Nice.</li>` :
+    snap.docs.map((d) => { const x = d.data(); return `<li data-id="${esc(d.id)}" data-uid="${esc(x.authorUid)}">
+      <div><span class="chtag">${esc(CH[x.channel])}</span><strong>${esc(x.title)}</strong>
+      ${x.details ? `<p>${esc(x.details)}</p>` : ""}<span class="by">${esc(x.authorName)}</span></div>
+      <div class="q-actions"><button class="btn sm" data-act="approved" type="button">Approve</button>
+      <button class="linkbtn" data-act="rejected" type="button">Reject</button>
+      <button class="linkbtn" data-act="ban" type="button">Reject + ban author</button></div></li>`; }).join("");
+}
+
+async function moderate(btn) {
+  const li = btn.closest("li"), act = btn.dataset.act;
+  btn.disabled = true;
+  try {
+    if (act === "ban") await setDoc(doc(db, "banned", li.dataset.uid), { at: serverTimestamp() });
+    await updateDoc(doc(db, "ideas", li.dataset.id), { status: act === "approved" ? "approved" : "rejected" });
+    li.remove();
+    if (act === "approved") loadIdeas();
+  } catch (e) { console.error(e); btn.disabled = false; }
+}
+
+// ── Wiring ────────────────────────────────────────────────────────────────
+$("ideas").addEventListener("click", (e) => { const li = e.target.closest(".vote")?.closest(".idea"); if (li) toggleVote(li); });
+$("queue").addEventListener("click", (e) => { const b = e.target.closest("button[data-act]"); if (b) moderate(b); });
+$("submit-form").addEventListener("submit", submitIdea);
+document.querySelectorAll("[data-sort]").forEach((b) => b.addEventListener("click", () => {
+  sort = b.dataset.sort;
+  document.querySelectorAll("[data-sort]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  loadIdeas();
+}));
+
+loadWinners();
+onAuthStateChanged(auth, async (u) => {
+  user = u;
+  renderAuth();
+  await loadMyVotes().catch(console.error);
+  loadIdeas();
+  loadMine().catch(console.error);
+  loadQueue().catch(console.error);
+});
