@@ -245,6 +245,11 @@ TEMPLATE = '''<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NerdVerse: NerdScience, NerdHistory and NerdNature</title>
 <meta name="description" content="The NerdVerse is three YouTube channels that drop heroes, armies and animals into impossible fights and use real science to call the winner.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#141414">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barlow:wght@500;700;800&display=swap" rel="stylesheet">

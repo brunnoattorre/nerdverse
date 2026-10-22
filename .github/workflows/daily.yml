@@ -43,7 +43,7 @@ jobs:
           git diff --cached --quiet || { git commit -m "Daily refresh: latest videos"; git push; }
 
       - name: Stage public files
-        run: mkdir -p public && cp -R index.html assets public/
+        run: mkdir -p public && cp -R index.html favicon.ico assets public/
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
