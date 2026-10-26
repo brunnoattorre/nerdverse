@@ -7,7 +7,7 @@ Run it on a schedule (cron, CI) and the page always shows the latest videos:
 
 Sources, in order: the YouTube Data API when YOUTUBE_API_KEY is set (reliable from CI
 servers), then the channel's /videos tab, then the RSS feed (YouTube serves it 404/500
-at random). Shorts are skipped. If every source fails, the previous run's videos are kept.
+at random). Shorts and compilations are skipped. If every source fails, the previous run's videos are kept.
 """
 import html
 import json
@@ -90,6 +90,11 @@ def get(url, timeout=20):
         return r.read().decode("utf-8", "replace")
 
 
+def is_compilation(title):
+    # re-cut marathons of older episodes; the page shows new episodes only
+    return bool(re.search(r"\bcompilation\b|\([^)]*\bmarathon\)", title, re.I))
+
+
 def oembed_title(vid):
     data = json.loads(get(f"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={vid}&format=json"))
     return data["title"]
@@ -110,7 +115,7 @@ def from_api(ch, n=3):
         out = []
         for it in items:
             sn = it["snippet"]
-            if sn["title"] in ("Private video", "Deleted video"):
+            if sn["title"] in ("Private video", "Deleted video") or is_compilation(sn["title"]):
                 continue
             th = sn.get("thumbnails", {})
             best = (th.get("maxres") or th.get("standard") or th.get("high") or {}).get("url")
@@ -124,13 +129,17 @@ def from_api(ch, n=3):
 
 def from_videos_tab(ch, n=3):
     page = get(f"https://www.youtube.com/@{ch['handle']}/videos")
-    ids = []
+    out, seen = [], set()
     for vid in re.findall(r'"videoId":"([\w-]{11})"', page):
-        if vid not in ids:
-            ids.append(vid)
-        if len(ids) == n:
+        if vid in seen:
+            continue
+        seen.add(vid)
+        title = oembed_title(vid)
+        if not is_compilation(title):
+            out.append({"id": vid, "title": title})
+        if len(out) == n or len(seen) == 10:
             break
-    return [{"id": v, "title": oembed_title(v)} for v in ids]
+    return out
 
 
 def from_rss(ch, n=3):
@@ -138,10 +147,11 @@ def from_rss(ch, n=3):
     out = []
     for entry in re.findall(r"<entry>(.*?)</entry>", feed, re.S):
         link = re.search(r'<link rel="alternate" href="([^"]+)"', entry).group(1)
-        if "/shorts/" in link:
+        title = html.unescape(re.search(r"<title>(.*?)<", entry).group(1))
+        if "/shorts/" in link or is_compilation(title):
             continue
         out.append({"id": re.search(r"<yt:videoId>(.*?)<", entry).group(1),
-                    "title": html.unescape(re.search(r"<title>(.*?)<", entry).group(1)),
+                    "title": title,
                     "date": re.search(r"<published>(.*?)<", entry).group(1)[:10]})
         if len(out) == n:
             break
