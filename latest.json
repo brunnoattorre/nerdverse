@@ -1,6 +1,11 @@
 {
   "science": [
     {
+      "id": "vUUxE1ggkkA",
+      "title": "Deadpool Vs Chucky - Could Deadpool Survive Chucky?",
+      "thumb": "https://i.ytimg.com/vi/vUUxE1ggkkA/maxresdefault.jpg"
+    },
+    {
       "id": "ESHQ6ZJBHwk",
       "title": "Supernatural Vs Silent Hill - Could The Winchesters Survive Silent Hill?",
       "thumb": "https://i.ytimg.com/vi/ESHQ6ZJBHwk/maxresdefault.jpg"
@@ -9,14 +14,14 @@
       "id": "mxRA9BfIoC8",
       "title": "Avengers vs Batman Who Laughs - Could The Avengers Survive The Batman Who Laughs?",
       "thumb": "https://i.ytimg.com/vi/mxRA9BfIoC8/maxresdefault.jpg"
-    },
-    {
-      "id": "Mdhqe3fIQsM",
-      "title": "Batman vs Absolute Batman - Could Batman Survive Absolute Batman?",
-      "thumb": "https://i.ytimg.com/vi/Mdhqe3fIQsM/maxresdefault.jpg"
     }
   ],
   "history": [
+    {
+      "id": "R6JsksMG_bw",
+      "title": "Which Army Would Win A Medieval Battle Royale?",
+      "thumb": "https://i.ytimg.com/vi/R6JsksMG_bw/maxresdefault.jpg"
+    },
     {
       "id": "j8DPodRIn-Q",
       "title": "Could 1 F22 Jet SOLO All Game Of Thrones Dragons?",
@@ -26,14 +31,14 @@
       "id": "MViVr_a57C4",
       "title": "Which Historical Army Can Hold LOTR Minas Tirith?",
       "thumb": "https://i.ytimg.com/vi/MViVr_a57C4/maxresdefault.jpg"
-    },
-    {
-      "id": "gGeEUakyoQM",
-      "title": "Which Historical Army Can Survive COD Zombies?",
-      "thumb": "https://i.ytimg.com/vi/gGeEUakyoQM/maxresdefault.jpg"
     }
   ],
   "nature": [
+    {
+      "id": "9FPz5dDNHNE",
+      "title": "Which Modern Predator Can Take Down a Woolly Mammoth?",
+      "thumb": "https://i.ytimg.com/vi/9FPz5dDNHNE/maxresdefault.jpg"
+    },
     {
       "id": "q0Tbe06bCYA",
       "title": "What If A Pack Of Extinct Terror Birds Invaded NYC?",
@@ -43,11 +48,6 @@
       "id": "G-rTp8uZpbM",
       "title": "What If Chihuahuas Were The Size of Lions?",
       "thumb": "https://i.ytimg.com/vi/G-rTp8uZpbM/maxresdefault.jpg"
-    },
-    {
-      "id": "61ESdgTb7-Q",
-      "title": "What Happens If You Put a 900lb Bear in the NFL?",
-      "thumb": "https://i.ytimg.com/vi/61ESdgTb7-Q/maxresdefault.jpg"
     }
   ]
 }
