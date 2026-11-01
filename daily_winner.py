@@ -3,12 +3,14 @@
 
 Every run:
   - writes standings/current: this month's top 3 by votes gained since the 1st (UTC);
-  - if last month has no winner yet, picks it and writes winners/{YYYY-MM}.
+  - if last month has no winner yet, picks it and writes winners/{YYYY-MM}, with that
+    month's top 3 in `top3` (the board shows them once the month is over).
     Normally that happens on the 1st; a missed run catches up on the next one.
 
-The winner is the approved idea that gained the most votes during the month (ties: more
-total votes, then the older idea). A vote counts in the month it was cast; removed votes
-don't count. Months with no votes produce no winner.
+The board starts fresh every month: only ideas submitted that month compete. The winner
+is the one that gained the most votes during the month (ties: more total votes, then the
+older idea). A vote counts in the month it was cast; removed votes don't count. Months
+with no votes produce no winner.
 
 Runs with Application Default Credentials: in GitHub Actions these come from workload
 identity federation (no stored key); locally, `gcloud auth application-default login`.
@@ -25,7 +27,7 @@ def month_start(dt):
 
 
 def ranked(db, start, end):
-    """Approved ideas by votes gained in [start, end), best first."""
+    """Approved ideas submitted in [start, end), by votes gained in it, best first."""
     from google.cloud.firestore_v1.base_query import FieldFilter
 
     q = (db.collection("votes").where(filter=FieldFilter("createdAt", ">=", start))
@@ -34,7 +36,7 @@ def ranked(db, start, end):
     rows = []
     for idea_id, n in gained.items():
         snap = db.collection("ideas").document(idea_id).get()
-        if snap.exists and snap.get("status") == "approved":
+        if snap.exists and snap.get("status") == "approved" and start <= snap.get("createdAt") < end:
             d = snap.to_dict()
             rows.append((n, d.get("votes", 0), -d["createdAt"].timestamp(), idea_id, d))
     rows.sort(reverse=True)
@@ -56,7 +58,7 @@ def main():
     if not ref.get().exists:
         top = ranked(db, last_month, this_month)
         if top:
-            ref.set({**top[0], "month": key, "decidedAt": firestore.SERVER_TIMESTAMP})
+            ref.set({**top[0], "top3": top[:3], "month": key, "decidedAt": firestore.SERVER_TIMESTAMP})
             print(f"{key}: winner {top[0]['title']!r} (+{top[0]['gained']} that month)")
         else:
             print(f"{key}: no votes that month, no winner")

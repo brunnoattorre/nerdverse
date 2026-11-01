@@ -243,11 +243,14 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .st-rejected{color:var(--red)}
 .list-sec{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(56px,7vw,96px)}
 .list-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:28px}
-.list-head h2{font-size:clamp(3rem,6vw,5rem);text-shadow:4px 4px 0 var(--paper)} /* taste-skill-ignore: comic ink offset on display type */
+.list-head h2,.lasttop-h{font-size:clamp(3rem,6vw,5rem);text-shadow:4px 4px 0 var(--paper)} /* taste-skill-ignore: comic ink offset on display type */
 .sorts{display:flex;gap:10px}
 .sorts button{font:400 1.3rem/1 var(--display);letter-spacing:.03em;padding:.45em .9em .35em;border:3px solid var(--ink);background:var(--paper);cursor:pointer}
 .sorts button[aria-pressed="true"]{background:var(--ink);color:var(--yellow)}
-#ideas{list-style:none;padding:0;display:grid;gap:18px}
+#ideas,#lasttop{list-style:none;padding:0;display:grid;gap:18px}
+.lasttop-h{margin-bottom:28px}
+#lasttop{margin-bottom:clamp(48px,6vw,80px)}
+.rank{display:grid;place-items:center;width:64px;height:64px;background:var(--ink);color:var(--yellow);font:400 2.2rem/1 var(--display)}
 .idea{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;background:var(--paper);border:var(--line) solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:16px 18px} /* taste-skill-ignore: comic print offset */
 .idea:nth-child(odd){transform:rotate(-.3deg)}
 .idea:nth-child(even){transform:rotate(.3deg)}
@@ -293,7 +296,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 <section class="board-hero" aria-labelledby="h-board">
   <div class="wrap">
     <h1 id="h-board">Pick the next fight</h1>
-    <p class="lede">Suggest a matchup for NerdScience, NerdHistory or NerdNature, then vote for every idea you want to see. At the end of each month, the idea that gained the most votes that month becomes the Idea of the Month.</p>
+    <p class="lede">Suggest a matchup for NerdScience, NerdHistory or NerdNature, then vote for every idea you want to see. At the end of each month, the idea that gained the most votes that month becomes the Idea of the Month, and the board starts fresh: last month's top 3 stay up, and new ideas compete for the next one.</p>
     <div id="auth"><span class="who">Loading…</span></div>
     <p id="board-status" role="status"></p>
   </div>
@@ -333,8 +336,12 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 
 <section class="list-sec dots" aria-labelledby="h-list">
   <div class="wrap">
+    <div id="lasttop-box" hidden>
+      <h2 id="h-lasttop" class="lasttop-h">Last month's top 3</h2>
+      <ol id="lasttop"></ol>
+    </div>
     <div class="list-head">
-      <h2 id="h-list">The ideas</h2>
+      <h2 id="h-list">This month's ideas</h2>
       <div class="sorts" role="group" aria-label="Sort ideas">
         <button type="button" data-sort="top" aria-pressed="true">Top</button>
         <button type="button" data-sort="new" aria-pressed="false">New</button>

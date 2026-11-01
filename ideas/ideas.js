@@ -1,5 +1,6 @@
 // Ideas board: Google sign-in, submit (moderated), one vote per person per idea
 // (any number of ideas), Idea of the Month. All access control lives in firestore.rules; this file is only UI.
+// The board starts fresh each month (UTC): it lists only this month's ideas, plus last month's top 3.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -69,6 +70,12 @@ async function loadMyVotes() {
   snap.forEach((d) => myVotes.add(d.data().ideaId));
 }
 
+const monthKey = (d) => d.toISOString().slice(0, 7);
+function monthStart(offset = 0) {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1));
+}
+
 function ideaCard(id, d) {
   const voted = myVotes.has(id);
   return `<li class="idea ch-${esc(d.channel)} reveal in" data-id="${esc(id)}">
@@ -87,13 +94,16 @@ function ideaCard(id, d) {
 
 async function loadIdeas() {
   const list = $("ideas");
+  // Newest first off the (status, createdAt) index; "Top" re-sorts this month's ideas here.
   const q = query(collection(db, "ideas"), where("status", "==", "approved"),
-    orderBy(sort === "top" ? "votes" : "createdAt", "desc"), limit(60));
+    where("createdAt", ">=", monthStart()), orderBy("createdAt", "desc"), limit(300));
   try {
     const snap = await getDocs(q);
-    list.innerHTML = snap.empty
-      ? `<li class="empty">No ideas yet. Be the first to suggest a fight.</li>`
-      : snap.docs.map((d) => ideaCard(d.id, d.data())).join("");
+    const docs = snap.docs.slice();
+    if (sort === "top") docs.sort((a, b) => (b.data().votes || 0) - (a.data().votes || 0));
+    list.innerHTML = docs.length
+      ? docs.map((d) => ideaCard(d.id, d.data())).join("")
+      : `<li class="empty">A new month and a clean board. Be the first to suggest a fight.</li>`;
     $("board-status").textContent = "";
   } catch (e) {
     console.error(e);
@@ -134,10 +144,11 @@ async function loadMonthly() {
       getDoc(doc(db, "standings", "current")),
       getDocs(query(collection(db, "winners"), orderBy("month", "desc"), limit(6))),
     ]);
-    const thisMonth = new Date().toISOString().slice(0, 7);
+    const thisMonth = monthKey(monthStart()), lastMonth = monthKey(monthStart(-1));
     const s = st.exists() ? st.data() : null;
     const leaders = s && s.month === thisMonth ? s.leaders : [];
     const wins = past.docs.map((d) => d.data());
+    renderLastTop(lastMonth, wins.find((w) => w.month === lastMonth), s);
     const champ = wins[0] && wins[0].month < thisMonth ? wins[0] : null;
     $("champ").hidden = !champ;
     const watch = champ && champ.videoId && `https://www.youtube.com/watch?v=${esc(champ.videoId)}`;
@@ -173,6 +184,22 @@ async function loadMonthly() {
         ? `<a href="https://www.youtube.com/watch?v=${esc(w.videoId)}">${esc(w.title)}</a>` : esc(w.title)}${w.gained != null ? ` <span class="w-g">+${w.gained}</span>` : ""}</li>`).join("");
     $("winners-h").hidden = wins.length <= (champ ? 1 : 0);
   } catch (e) { console.error(e); }
+}
+
+// Last month's top 3, read-only. The winner doc carries them from the monthly job; until that
+// job runs on the 1st, the final standings of last month stand in.
+function renderLastTop(month, win, standings) {
+  const top = win ? (win.top3 || [win]) : standings && standings.month === month ? standings.leaders : [];
+  $("lasttop-box").hidden = !top.length;
+  $("h-lasttop").textContent = `${fmtMonth(month, { month: "long" })}'s top ${top.length}`;
+  $("lasttop").innerHTML = top.map((t, i) => `<li class="idea ch-${esc(t.channel)}">
+    <span class="rank" aria-label="Number ${i + 1}">${i + 1}</span>
+    <div class="idea-body">
+      <span class="chtag">${esc(CH[t.channel] || "")}</span>
+      <h3>${esc(t.title)}</h3>
+      <span class="by">${t.gained != null ? `+${t.gained} votes in ${esc(fmtMonth(month, { month: "long" }))} · ` : ""}Suggested by ${esc(t.authorName)}</span>
+    </div>
+  </li>`).join("");
 }
 
 // ── Submitting ────────────────────────────────────────────────────────────
@@ -264,6 +291,7 @@ document.querySelectorAll("[data-sort]").forEach((b) => b.addEventListener("clic
   loadIdeas();
 }));
 
+$("h-list").textContent = `${fmtMonth(monthKey(monthStart()), { month: "long" })}'s ideas`;
 loadMonthly();
 onAuthStateChanged(auth, async (u) => {
   user = u;
