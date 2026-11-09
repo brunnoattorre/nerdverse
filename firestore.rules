@@ -65,13 +65,17 @@ service cloud.firestore {
     }
 
     // Created only by the monthly job (service account, which bypasses rules).
-    // The admin may attach the YouTube video made from the winning idea.
+    // The admin may attach the YouTube video made from each of the month's top 3 ideas:
+    // videoId for #1, videoId2 and videoId3 for #2 and #3.
+    function goodVideo(k) {
+      return !(k in request.resource.data)
+        || (request.resource.data[k] is string && request.resource.data[k].matches('[A-Za-z0-9_-]{11}'));
+    }
     match /winners/{month} {
       allow read: if true;
       allow update: if isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['videoId'])
-        && request.resource.data.videoId is string
-        && request.resource.data.videoId.matches('[A-Za-z0-9_-]{11}');
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['videoId', 'videoId2', 'videoId3'])
+        && goodVideo('videoId') && goodVideo('videoId2') && goodVideo('videoId3');
       allow create, delete: if false;
     }
     match /standings/{doc} {

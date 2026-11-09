@@ -134,12 +134,21 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .pitch-grid{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
 .pitch h2{font-size:clamp(3rem,6vw,5.5rem);color:var(--yellow)}
 .pitch p{max-width:34em;margin-top:14px;font-weight:700}
-.pitch .champ-line{display:inline-block;margin-top:22px;background:var(--yellow);color:var(--ink);padding:.6em .9em;max-width:none}
-.pitch .champ-line strong{font:400 1.5rem/1.1 var(--display);letter-spacing:.02em}
-.pitch-grid:has(.champ-thumb){display:grid;grid-template-columns:1.15fr 1fr;align-items:center;gap:clamp(32px,5vw,72px)}
+.pitch .champ-box{margin-top:26px;background:var(--yellow);color:var(--ink);padding:clamp(16px,2vw,22px) clamp(18px,2.4vw,26px);max-width:36em}
+.pitch .champ-line{font:400 1.7rem/1 var(--display);letter-spacing:.02em;margin:0;max-width:none}
+.pitch .champ-top{list-style:none;padding:0;margin-top:12px;display:grid;gap:8px}
+.pitch .champ-top li{font:400 1.35rem/1.15 var(--display);letter-spacing:.02em}
+.pitch .champ-top li:first-child{font-size:1.75rem}
+.pitch .champ-top a{color:inherit;text-underline-offset:4px}
+.pitch .champ-place{font:800 .95rem/1 var(--text);letter-spacing:0;margin-right:6px}
+.pitch-grid:has(.champ-vids){display:grid;grid-template-columns:1.15fr 1fr;align-items:center;gap:clamp(32px,5vw,72px)}
+.champ-vids{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2vw,24px)}
+.champ-vids .champ-thumb:first-child{grid-column:1/-1}
+.champ-vids .champ-thumb:nth-child(2):last-child{grid-column:1/-1}
 .pitch .champ-thumb{color:var(--ink);transform:rotate(1.2deg)}
+.pitch .champ-thumb:nth-child(2){transform:rotate(-1deg)}
 .pitch .btn{box-shadow:5px 5px 0 var(--paper)} /* taste-skill-ignore: comic print offset */
-@media (max-width:860px){.pitch-grid:has(.champ-thumb){grid-template-columns:1fr}}
+@media (max-width:860px){.pitch-grid:has(.champ-vids){grid-template-columns:1fr}}
 .pitch p:has(.btn){margin-top:26px}
 
 /* Store */
@@ -332,7 +341,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
     <div>
       <h2 id="h-pitch" class="reveal">Pick the next fight</h2>
       <p class="reveal">Suggest a matchup for any of the three channels and vote for the ones you want to see. The most-voted idea each month becomes the Idea of the Month.</p>
-      <p class="champ-line reveal">October's Idea of the Month: <strong>Can the Teenage Mutant Ninja Turtles survive the Predator?</strong></p>
+      <div class="champ-box reveal"><p class="champ-line">October's Ideas of the Month</p><ol class="champ-top"><li><span class="champ-place">Winner</span> Can the Teenage Mutant Ninja Turtles survive the Predator?</li><li><span class="champ-place">Second</span> Sam and Dean from Supernatural Fight Freddy Krueger Form Nightmare on elm Street</li><li><span class="champ-place">Third</span> Harry Potter Vs. Lord of the Rings</li></ol></div>
       
     </div>
     <a class="btn reveal" href="ideas/">Submit and vote</a>
@@ -403,7 +412,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
         <li><a href="https://www.youtube.com/@NerdNatureNs">NerdNature on YouTube</a></li>
         <li><a href="https://nerdscience-official.myspreadshop.com">Store</a></li>
       </ul>
-      <p>Videos updated 8 November 2026</p>
+      <p>Videos updated 9 November 2026</p>
     </div>
     <p class="fine">The NerdVerse channels are independent, fan-made projects, not affiliated with, authorized, endorsed or sponsored by DC Comics, Marvel, Warner Bros. Discovery, The Walt Disney Company or any other rights holder. All characters, names and related properties belong to their respective owners.</p>
   </div>

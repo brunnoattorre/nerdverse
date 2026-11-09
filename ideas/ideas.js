@@ -1,6 +1,7 @@
 // Ideas board: Google sign-in, submit (moderated), one vote per person per idea
 // (any number of ideas), Idea of the Month. All access control lives in firestore.rules; this file is only UI.
-// The board starts fresh each month (UTC): it lists only this month's ideas, plus last month's top 3.
+// The board starts fresh each month (UTC): it lists only this month's ideas, plus last month's top 3
+// (the Ideas of the Month), each with the video made from it once the admin links one.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -135,9 +136,45 @@ async function toggleVote(li) {
   } finally { busy.delete(id); }
 }
 
-// ── Idea of the month ─────────────────────────────────────────────────────
+// ── Ideas of the month ────────────────────────────────────────────────────
 const fmtMonth = (m, opts = { month: "long", year: "numeric" }) =>
   new Date(m + "-15T12:00:00Z").toLocaleDateString("en-US", opts);
+// The winner doc holds one video per place: videoId for #1, videoId2 and videoId3 for #2 and #3.
+const VIDEO_FIELDS = ["videoId", "videoId2", "videoId3"];
+
+// Last month's top 3, each with its video once the admin links it. The winner doc carries them
+// from the monthly job; until that job runs on the 1st, the final standings of last month stand
+// in (no videos yet, since there's no doc to attach them to).
+// Order is carried by size and words, not numbers: the winner gets the wide card.
+const PLACES = ["Winner", "Second", "Third"];
+function renderChamp(month, win, top) {
+  $("champ").hidden = !top.length;
+  if (!top.length) return;
+  const name = fmtMonth(month, { month: "long" });
+  $("champ").innerHTML = `<h2 class="champ-h">${esc(name)}'s ${top.length > 1 ? "Ideas" : "Idea"} of the Month</h2>
+    <p class="champ-sub">The ${top.length > 1 ? `${["", "", "two", "three"][top.length]} ideas that gained the most votes` : "idea that gained the most votes"} in ${esc(name)}.</p>
+    <ol class="champ-list">${top.map((t, i) => {
+      const field = VIDEO_FIELDS[i], vid = win && win[field];
+      const watch = vid && `https://www.youtube.com/watch?v=${esc(vid)}`;
+      return `<li class="champ-card ch-${esc(t.channel)}${watch ? " has-thumb" : ""}">
+        ${watch ? `<a class="panel champ-thumb" href="${watch}" aria-label="Watch ${esc(t.title)}">
+          <img src="https://i.ytimg.com/vi/${esc(vid)}/maxresdefault.jpg" alt="${esc(t.title)}" width="1280" height="720">
+          <span class="play" aria-hidden="true"></span></a>` : ""}
+        <div class="champ-body">
+          <p class="champ-place">${PLACES[i]} · <span class="chtag">${esc(CH[t.channel] || "")}</span></p>
+          <p class="champ-t">${esc(t.title)}</p>
+          <p class="champ-m">${[t.gained != null && `+${t.gained} votes in ${name}`,
+            t.authorName && `suggested by ${t.authorName}`].filter(Boolean).map(esc).join(" · ")}</p>
+          ${watch ? `<a class="btn sm champ-watch" href="${watch}">Watch the video</a>` : ""}
+          ${isAdmin() && win ? `<form class="champ-admin" data-month="${esc(month)}" data-field="${field}">
+            <label for="champ-url-${i}">${vid ? "Change the" : "Link the"} video for this idea</label>
+            <div><input id="champ-url-${i}" name="url" placeholder="YouTube link, e.g. https://youtu.be/5IUXc8rFqao" required>
+            <button class="btn sm" type="submit">Save video</button></div>
+            <p class="champ-admin-msg" role="status"></p></form>` : ""}
+        </div></li>`;
+    }).join("")}</ol>`;
+}
+
 async function loadMonthly() {
   try {
     const [st, past] = await Promise.all([
@@ -148,25 +185,10 @@ async function loadMonthly() {
     const s = st.exists() ? st.data() : null;
     const leaders = s && s.month === thisMonth ? s.leaders : [];
     const wins = past.docs.map((d) => d.data());
-    renderLastTop(lastMonth, wins.find((w) => w.month === lastMonth), s);
-    const champ = wins[0] && wins[0].month < thisMonth ? wins[0] : null;
-    $("champ").hidden = !champ;
-    const watch = champ && champ.videoId && `https://www.youtube.com/watch?v=${esc(champ.videoId)}`;
-    $("champ").classList.toggle("has-thumb", !!watch);
-    if (champ) $("champ").innerHTML = `<div class="champ-text"><p class="champ-k">Idea of the Month · ${esc(fmtMonth(champ.month))}</p>
-      <p class="champ-t">${esc(champ.title)}</p>
-      <p class="champ-m">${[CH[champ.channel],
-        champ.gained != null && `+${champ.gained} votes in ${fmtMonth(champ.month, { month: "long" })}`,
-        champ.authorName && `suggested by ${champ.authorName}`].filter(Boolean).map(esc).join(" · ")}</p>
-      ${watch ? `<a class="btn champ-watch" href="${watch}">Watch the video</a>` : ""}
-      ${isAdmin() ? `<form class="champ-admin" data-month="${esc(champ.month)}">
-        <label for="champ-url">${champ.videoId ? "Change the" : "Link the"} video for this winner</label>
-        <div><input id="champ-url" name="url" placeholder="YouTube link, e.g. https://youtu.be/5IUXc8rFqao" required>
-        <button class="btn sm" type="submit">Save video</button></div>
-        <p class="champ-admin-msg" role="status"></p></form>` : ""}</div>
-      ${watch ? `<a class="panel champ-thumb" href="${watch}" aria-label="Watch ${esc(champ.title)}">
-        <img src="https://i.ytimg.com/vi/${esc(champ.videoId)}/maxresdefault.jpg" alt="${esc(champ.title)}" width="1280" height="720">
-        <span class="play" aria-hidden="true"></span></a>` : ""}`;
+    const lastWin = wins.find((w) => w.month === lastMonth);
+    const champ = lastWin || (wins[0] && wins[0].month < thisMonth ? wins[0] : null);
+    if (lastWin || !(s && s.month === lastMonth)) renderChamp(champ ? champ.month : lastMonth, champ, champ ? (champ.top3 || [champ]) : []);
+    else renderChamp(lastMonth, null, s.leaders);
     // maxres doesn't exist for every upload; YouTube serves a 120px grey placeholder instead of a 404
     $("champ").querySelectorAll(".champ-thumb img").forEach((img) => {
       const low = () => { if (!img.src.includes("hqdefault")) img.src = img.src.replace("maxresdefault", "hqdefault"); };
@@ -184,22 +206,6 @@ async function loadMonthly() {
         ? `<a href="https://www.youtube.com/watch?v=${esc(w.videoId)}">${esc(w.title)}</a>` : esc(w.title)}${w.gained != null ? ` <span class="w-g">+${w.gained}</span>` : ""}</li>`).join("");
     $("winners-h").hidden = wins.length <= (champ ? 1 : 0);
   } catch (e) { console.error(e); }
-}
-
-// Last month's top 3, read-only. The winner doc carries them from the monthly job; until that
-// job runs on the 1st, the final standings of last month stand in.
-function renderLastTop(month, win, standings) {
-  const top = win ? (win.top3 || [win]) : standings && standings.month === month ? standings.leaders : [];
-  $("lasttop-box").hidden = !top.length;
-  $("h-lasttop").textContent = `${fmtMonth(month, { month: "long" })}'s top ${top.length}`;
-  $("lasttop").innerHTML = top.map((t, i) => `<li class="idea ch-${esc(t.channel)}">
-    <span class="rank" aria-label="Number ${i + 1}">${i + 1}</span>
-    <div class="idea-body">
-      <span class="chtag">${esc(CH[t.channel] || "")}</span>
-      <h3>${esc(t.title)}</h3>
-      <span class="by">${t.gained != null ? `+${t.gained} votes in ${esc(fmtMonth(month, { month: "long" }))} · ` : ""}Suggested by ${esc(t.authorName)}</span>
-    </div>
-  </li>`).join("");
 }
 
 // ── Submitting ────────────────────────────────────────────────────────────
@@ -271,7 +277,7 @@ async function linkVideo(form) {
   if (!id) return say(msg, "That doesn't look like a YouTube video link.", true);
   form.querySelector("button").disabled = true;
   try {
-    await updateDoc(doc(db, "winners", form.dataset.month), { videoId: id });
+    await updateDoc(doc(db, "winners", form.dataset.month), { [form.dataset.field]: id });
     loadMonthly();
   } catch (e) {
     console.error(e);
