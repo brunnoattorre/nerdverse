@@ -704,26 +704,60 @@ IDEAS_TEMPLATE = '''<!doctype html>
 .btn.sm{font-size:1.15rem;padding:.45em .8em .35em;box-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic print offset */
 .top-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,56px);padding-block:clamp(56px,7vw,96px)}
 .champ-wrap:has(.champ:not([hidden])){padding-top:clamp(48px,6vw,80px)}
-.champ{background:var(--yellow);border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ink);padding:clamp(22px,3vw,40px);transform:rotate(-.4deg)} /* taste-skill-ignore: comic print offset */
-.champ-h{font-size:clamp(2.6rem,5.2vw,4.6rem);text-shadow:3px 3px 0 var(--paper)} /* taste-skill-ignore: comic ink offset on display type */
-.champ-sub{font-weight:800;margin-block:10px clamp(22px,3vw,32px)}
-.champ-list{list-style:none;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,3vw,32px)}
-.champ-card{background:var(--paper);border:var(--line) solid var(--ink);padding:clamp(16px,2vw,24px);display:grid;gap:18px;align-content:start}
-.champ-card:first-child{grid-column:1/-1}
-.champ-card:first-child.has-thumb{grid-template-columns:1fr 1.15fr;align-items:center;gap:clamp(20px,3vw,40px)}
-.champ-card:first-child .champ-thumb{order:2;transform:rotate(1.2deg)}
-.champ-place{font-weight:800}
-.champ-place .chtag{margin-left:4px}
-.champ-t{font:400 1.6rem/1.08 var(--display);letter-spacing:.01em;margin-block:10px 8px}
-.champ-card:first-child .champ-t{font-size:clamp(1.8rem,2.6vw,2.25rem)}
-.champ-m{font-weight:700}
-.champ-watch{margin-top:16px}
-.champ-admin{margin-top:18px;padding-top:16px;border-top:3px dashed var(--ink)}
+.champ{background:var(--ink);color:var(--paper);border:var(--line) solid var(--ink);padding:clamp(24px,3.4vw,48px);transform:rotate(-.4deg)}
+.champ-h{font-size:clamp(2.8rem,5.6vw,5rem);color:var(--yellow);text-shadow:4px 4px 0 var(--red)} /* taste-skill-ignore: comic ink offset on display type */
+.champ-sub{font-weight:700;font-size:1.1rem;margin-block:12px clamp(28px,3.6vw,44px)}
+.champ-list{list-style:none;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,3.6vw,44px)}
+.champ-card{--ch:var(--green);position:relative;display:grid;grid-template-columns:1fr auto;grid-template-areas:"body votes";gap:20px 28px;align-items:center;
+  background:var(--paper);color:var(--ink);border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ch);padding:clamp(18px,2.2vw,28px)} /* taste-skill-ignore: comic print offset */
+.champ-card.ch-history{--ch:var(--red)}
+.champ-card.ch-nature{--ch:var(--blue)}
+.champ-card:nth-child(2){transform:rotate(-1deg)}
+.champ-card:nth-child(3){transform:rotate(.9deg)}
+.champ-body{grid-area:body}
+.champ-t{font-size:clamp(1.7rem,2.3vw,2.1rem);line-height:1;letter-spacing:.015em}
+.champ-card.long .champ-t{font-size:clamp(1.4rem,1.9vw,1.7rem)}
+.champ-m{font-weight:700;margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.champ-m .chtag{background:var(--ch)}
+.champ-votes{grid-area:votes;align-self:stretch;display:grid;align-content:center;justify-items:center;text-align:center;min-width:7.5em;
+  background:var(--yellow);color:var(--ink);border:var(--line) solid var(--ink);padding:12px 14px;font-weight:800;font-size:.95rem;line-height:1.2}
+.champ-votes strong{font:400 3.4rem/.9 var(--display);letter-spacing:.01em}
+.champ-votes span{display:block;margin-top:6px;font:400 1.3rem/1 var(--display);letter-spacing:.03em}
+/* Second and third: the title takes the full width, the votes run as a strip beneath it. */
+.champ-card:not(:first-child){grid-template-columns:1fr;grid-template-areas:"body" "votes";align-content:start}
+.champ-card:not(:first-child) .champ-votes{justify-self:start;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;min-width:0;padding:8px 16px 6px}
+.champ-card:not(:first-child) .champ-votes strong{font-size:2.6rem}
+.champ-card:not(:first-child) .champ-votes span{margin:0}
+/* The winner: a full panel in its channel's colour, halftone, the vote count as its centrepiece. */
+.champ-card:first-child{grid-column:1/-1;background-color:var(--ch);color:var(--paper);box-shadow:var(--drop) var(--drop) 0 var(--yellow);
+  background-image:radial-gradient(rgba(255,253,245,.18) 1.8px,transparent 1.9px);background-size:13px 13px;padding:clamp(28px,3.6vw,52px);gap:24px clamp(28px,4vw,56px)} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.champ-card:first-child .champ-t{font-size:clamp(2.4rem,4.4vw,4rem);color:var(--yellow);text-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic ink offset on display type */
+.champ-card:first-child.long .champ-t{font-size:clamp(2rem,3.4vw,3rem)}
+.champ-card:first-child .champ-m{font-size:1.1rem}
+.champ-card:first-child .champ-m .chtag{background:var(--ink)}
+.champ-card:first-child .champ-votes{transform:rotate(2.5deg);font-size:1.05rem;min-width:9em;padding:18px 20px}
+.champ-card:first-child .champ-votes strong{font-size:clamp(4.2rem,7vw,6.5rem)}
+.champ-bubble{position:absolute;top:-30px;right:clamp(20px,4vw,64px);margin:0;font:400 1.9rem/1 var(--display);letter-spacing:.03em;color:var(--ink);padding:.5em .9em .4em;transform:rotate(6deg);z-index:1}
+.champ-card:first-child.has-thumb{grid-template-columns:1fr 1.1fr;grid-template-areas:"body thumb" "votes thumb"}
+.champ-card:first-child.has-thumb .champ-votes{justify-self:start;align-self:start;transform:rotate(-1.5deg)}
+.champ-card:first-child .champ-thumb{grid-area:thumb;transform:rotate(1.2deg)}
+.champ-card:not(:first-child).has-thumb{grid-template-areas:"thumb" "body" "votes"}
+.champ-card:not(:first-child) .champ-thumb{grid-area:thumb}
+.champ-watch{margin-top:18px}
+.champ-card:first-child .champ-watch{box-shadow:4px 4px 0 var(--ink)} /* taste-skill-ignore: comic print offset */
+.champ-admin{margin-top:18px;padding-top:16px;border-top:3px dashed currentColor}
 .champ-admin label{display:block;font-weight:800;margin-bottom:8px}
 .champ-admin div{display:flex;gap:10px;flex-wrap:wrap}
 .champ-admin input{flex:1 1 220px;font:500 1rem/1.4 var(--text);padding:10px 12px;border:3px solid var(--ink);background:#fff;color:var(--ink)}
 .champ-admin-msg{font-weight:800;margin-top:8px}
-@media (max-width:860px){.champ-list,.champ-card:first-child.has-thumb{grid-template-columns:1fr}.champ-card:first-child .champ-thumb{order:0}}
+@media (max-width:860px){
+  .champ-list{grid-template-columns:1fr}
+  .champ-card,.champ-card:first-child,.champ-card:first-child.has-thumb,.champ-card:not(:first-child).has-thumb{grid-template-columns:1fr;grid-template-areas:"thumb" "body" "votes"}
+  .champ-votes,.champ-card:first-child .champ-votes{justify-self:start;min-width:0;padding:10px 16px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .champ-votes span{margin:0}
+  .champ-card:first-child .champ-votes strong{font-size:3.6rem}
+  .champ-bubble{font-size:1.5rem;top:-24px}
+}
 .box{border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ink);padding:clamp(20px,3vw,32px)} /* taste-skill-ignore: comic print offset */
 .box h2{font-size:clamp(2.2rem,4vw,3.2rem);margin-bottom:16px}
 .winbox{background:var(--green);color:var(--paper)}

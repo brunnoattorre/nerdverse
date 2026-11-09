@@ -156,15 +156,15 @@ function renderChamp(month, win, top) {
     <ol class="champ-list">${top.map((t, i) => {
       const field = VIDEO_FIELDS[i], vid = win && win[field];
       const watch = vid && `https://www.youtube.com/watch?v=${esc(vid)}`;
-      return `<li class="champ-card ch-${esc(t.channel)}${watch ? " has-thumb" : ""}">
+      return `<li class="champ-card ch-${esc(t.channel)}${watch ? " has-thumb" : ""}${t.title.length > 60 ? " long" : ""}">
+        ${i === 0 ? `<p class="bubble champ-bubble">${PLACES[0]}!</p>` : ""}
         ${watch ? `<a class="panel champ-thumb" href="${watch}" aria-label="Watch ${esc(t.title)}">
           <img src="https://i.ytimg.com/vi/${esc(vid)}/maxresdefault.jpg" alt="${esc(t.title)}" width="1280" height="720">
           <span class="play" aria-hidden="true"></span></a>` : ""}
+        ${t.gained != null ? `<p class="champ-votes"><strong>+${esc(t.gained)}</strong> votes in ${esc(name)}${i ? `<span>· ${PLACES[i]} place</span>` : ""}</p>` : ""}
         <div class="champ-body">
-          <p class="champ-place">${PLACES[i]} · <span class="chtag">${esc(CH[t.channel] || "")}</span></p>
-          <p class="champ-t">${esc(t.title)}</p>
-          <p class="champ-m">${[t.gained != null && `+${t.gained} votes in ${name}`,
-            t.authorName && `suggested by ${t.authorName}`].filter(Boolean).map(esc).join(" · ")}</p>
+          <h3 class="champ-t">${esc(t.title)}</h3>
+          <p class="champ-m"><span class="chtag">${esc(CH[t.channel] || "")}</span>${t.authorName ? ` Suggested by ${esc(t.authorName)}` : ""}</p>
           ${watch ? `<a class="btn sm champ-watch" href="${watch}">Watch the video</a>` : ""}
           ${isAdmin() && win ? `<form class="champ-admin" data-month="${esc(month)}" data-field="${field}">
             <label for="champ-url-${i}">${vid ? "Change the" : "Link the"} video for this idea</label>
