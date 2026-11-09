@@ -275,52 +275,58 @@ def write_seo_files():
 def last_month_winner():
     """Read last month's Ideas of the Month from Firestore (public read; no auth needed).
 
-    Returns the month and its top 3 ideas, each with the video linked to it (videoId for #1,
-    videoId2 and videoId3 for #2 and #3), or None. Months decided before top3 existed carry
-    only the winner."""
+    Returns the month and its top 3 ideas (title, channel, votes gained, author and the video
+    linked to it: videoId for #1, videoId2 and videoId3 for #2 and #3), or None. Months
+    decided before top3 existed carry only the winner."""
     first = datetime.now().replace(day=1)
     key = (first - timedelta(days=1)).strftime("%Y-%m")
     url = (f"https://firestore.googleapis.com/v1/projects/{FIREBASE['projectId']}"
            f"/databases/(default)/documents/winners/{key}")
+
+    def val(r, k):
+        v = r.get(k, {})
+        return v.get("stringValue", v.get("integerValue"))
     try:
         f = json.loads(get(url))["fields"]
         rows = [v["mapValue"]["fields"] for v in f.get("top3", {}).get("arrayValue", {}).get("values", [])] or [f]
         return {"month": key, "top": [
-            {"title": r["title"]["stringValue"],
-             "videoId": f.get(field, {}).get("stringValue")}
+            {"title": val(r, "title"), "channel": val(r, "channel") or "science", "gained": val(r, "gained"),
+             "author": val(r, "authorName"), "videoId": val(f, field)}
             for r, field in zip(rows[:3], ("videoId", "videoId2", "videoId3"))]}
     except Exception:
         return None
 
 
 PLACES = ("Winner", "Second", "Third")
+CHANNEL_NAMES = {"science": "NerdScience", "history": "NerdHistory", "nature": "NerdNature"}
 
 
 def champ_html(w):
+    """The call-out's Ideas of the Month: the winner as a tall panel in its channel's colour,
+    second and third stacked beside it; each shows its video once one is linked."""
     if not w:
         return ""
     month = datetime.strptime(w["month"], "%Y-%m").strftime("%B")
-    items = "".join(
-        f'<li><span class="champ-place">{PLACES[i]}</span> '
-        + (f'<a href="https://www.youtube.com/watch?v={e(t["videoId"])}">{e(t["title"])}</a>'
-           if t["videoId"] else e(t["title"])) + '</li>'
-        for i, t in enumerate(w["top"]))
+    cards = []
+    for i, t in enumerate(w["top"]):
+        vid = t["videoId"]
+        watch = f"https://www.youtube.com/watch?v={e(vid)}" if vid else ""
+        title = e(t["title"])
+        cards.append(
+            f'<article class="ptop-card ch-{e(t["channel"])}{" has-thumb" if vid else ""}{" long" if len(t["title"]) > 60 else ""} reveal">'
+            + (f'<p class="bubble ptop-bubble">{PLACES[0]}!</p>' if i == 0 else "")
+            + (f'<a class="panel vid ptop-thumb" href="{watch}" aria-label="Watch {title}">'
+               f'<img src="{e(thumb_url(vid))}" alt="{title}" loading="lazy" width="1280" height="720">'
+               f'<span class="play" aria-hidden="true"></span></a>' if vid else "")
+            + f'<h4 class="ptop-t">{f"<a href=\"{watch}\">{title}</a>" if vid else title}</h4>'
+            + f'<p class="ptop-m"><span class="chtag">{e(CHANNEL_NAMES.get(t["channel"], ""))}</span>'
+            + (f' Suggested by {e(t["author"])}' if t["author"] else "") + '</p>'
+            + (f'<p class="ptop-votes"><strong>+{e(t["gained"])}</strong> votes in {e(month)}'
+               + (f'<span>· {PLACES[i]} place</span>' if i else "") + '</p>' if t["gained"] else "")
+            + '</article>')
     label = "Ideas" if len(w["top"]) > 1 else "Idea"
-    return (f'<div class="champ-box reveal"><p class="champ-line">{e(month)}\'s {label} of the Month</p>'
-            f'<ol class="champ-top">{items}</ol></div>')
-
-
-def champ_aside(w):
-    """Right side of the ideas call-out: the videos made from the top ideas, else the button."""
-    vids = [(i, t) for i, t in enumerate(w["top"]) if t["videoId"]] if w else []
-    if not vids:
-        return '<a class="btn reveal" href="ideas/">Submit and vote</a>'
-    return '<div class="champ-vids">' + "".join(
-        f'<a class="panel vid champ-thumb reveal" href="https://www.youtube.com/watch?v={e(t["videoId"])}">'
-        f'<img src="{e(thumb_url(t["videoId"]))}" alt="{e(t["title"])}" loading="lazy" width="1280" height="720">'
-        f'<span class="play" aria-hidden="true"></span>'
-        f'<span class="caption">{PLACES[i]}: watch it</span></a>'
-        for i, t in vids) + '</div>'
+    return (f'<div class="ptop"><h3 class="ptop-h reveal">{e(month)}\'s {label} of the Month</h3>'
+            f'<div class="ptop-grid">{"".join(cards)}</div></div>')
 
 
 def render(data, champ=None):
@@ -335,9 +341,7 @@ def render(data, champ=None):
     return (TEMPLATE.replace("%%STRIP%%", strip).replace("%%SECTIONS%%", sections)
             .replace("%%PRODUCTS%%", products).replace("%%DESIGN%%", DESIGN).replace("%%STORE%%", STORE)
             .replace("%%BUILT%%", built).replace("%%CHAMP%%", champ_html(champ))
-            .replace("%%CHAMPASIDE%%", champ_aside(champ))
-            .replace("%%CHAMPBTN%%", '<p><a class="btn reveal" href="ideas/">Submit and vote</a></p>'
-                     if champ and any(t["videoId"] for t in champ["top"]) else "").replace("%%TITLE%%", e(TITLE)).replace("%%DESC%%", e(DESC))
+            .replace("%%TITLE%%", e(TITLE)).replace("%%DESC%%", e(DESC))
             .replace("%%JSONLD%%", json_ld()).replace("%%SITE%%", SITE))
 
 
@@ -474,25 +478,41 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 
 /* Ideas call-out */
 .pitch{background:var(--ink);color:var(--paper);border-top:var(--line) solid var(--ink);padding-block:clamp(64px,8vw,104px)}
-.pitch-grid{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
+.pitch-head{display:flex;justify-content:space-between;align-items:end;gap:24px 40px;flex-wrap:wrap}
 .pitch h2{font-size:clamp(3rem,6vw,5.5rem);color:var(--yellow)}
 .pitch p{max-width:34em;margin-top:14px;font-weight:700}
-.pitch .champ-box{margin-top:26px;background:var(--yellow);color:var(--ink);padding:clamp(16px,2vw,22px) clamp(18px,2.4vw,26px);max-width:36em}
-.pitch .champ-line{font:400 1.7rem/1 var(--display);letter-spacing:.02em;margin:0;max-width:none}
-.pitch .champ-top{list-style:none;padding:0;margin-top:12px;display:grid;gap:8px}
-.pitch .champ-top li{font:400 1.35rem/1.15 var(--display);letter-spacing:.02em}
-.pitch .champ-top li:first-child{font-size:1.75rem}
-.pitch .champ-top a{color:inherit;text-underline-offset:4px}
-.pitch .champ-place{font:800 .95rem/1 var(--text);letter-spacing:0;margin-right:6px}
-.pitch-grid:has(.champ-vids){display:grid;grid-template-columns:1.15fr 1fr;align-items:center;gap:clamp(32px,5vw,72px)}
-.champ-vids{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2vw,24px)}
-.champ-vids .champ-thumb:first-child{grid-column:1/-1}
-.champ-vids .champ-thumb:nth-child(2):last-child{grid-column:1/-1}
-.pitch .champ-thumb{color:var(--ink);transform:rotate(1.2deg)}
-.pitch .champ-thumb:nth-child(2){transform:rotate(-1deg)}
 .pitch .btn{box-shadow:5px 5px 0 var(--paper)} /* taste-skill-ignore: comic print offset */
-@media (max-width:860px){.pitch-grid:has(.champ-vids){grid-template-columns:1fr}}
-.pitch p:has(.btn){margin-top:26px}
+.ptop{margin-top:clamp(48px,6vw,80px)}
+.ptop-h{font-size:clamp(2.2rem,3.8vw,3.4rem);color:var(--paper);text-shadow:3px 3px 0 var(--red);margin-bottom:clamp(24px,3vw,36px)} /* taste-skill-ignore: comic ink offset on display type */
+.ptop-grid{display:grid;grid-template-columns:1.35fr 1fr;grid-template-rows:auto auto;gap:clamp(24px,3vw,36px)}
+.ptop-card{--ch:var(--green);position:relative;display:grid;gap:14px;align-content:start;background:var(--paper);color:var(--ink);
+  border:var(--line) solid var(--ink);box-shadow:var(--drop) var(--drop) 0 var(--ch);padding:clamp(18px,2vw,24px)} /* taste-skill-ignore: comic print offset */
+.ptop-card.ch-history{--ch:var(--red)}
+.ptop-card.ch-nature{--ch:var(--blue)}
+.ptop-card:nth-child(2){transform:rotate(-1deg)}
+.ptop-card:nth-child(3){transform:rotate(.9deg)}
+.ptop-t{font:400 clamp(1.5rem,1.9vw,1.8rem)/1 var(--display);letter-spacing:.015em}
+.ptop-card.long .ptop-t{font-size:clamp(1.3rem,1.6vw,1.5rem)}
+.ptop-t a{color:inherit;text-underline-offset:5px}
+.ptop-m{font-weight:700;margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:none}
+.ptop-m .chtag{display:inline-block;font:400 1.05rem/1 var(--display);letter-spacing:.04em;padding:.3em .55em .2em;color:var(--paper);background:var(--ch)}
+.ptop-votes{justify-self:start;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:0;max-width:none;
+  background:var(--yellow);color:var(--ink);border:var(--line) solid var(--ink);padding:6px 14px 4px;font-weight:800;font-size:.95rem}
+.ptop-votes strong{font:400 2.3rem/1 var(--display);letter-spacing:.01em}
+.ptop-votes span{font:400 1.2rem/1 var(--display);letter-spacing:.03em}
+/* The winner: a tall panel in its channel's colour, halftone, the vote count set huge. */
+.ptop-card:first-child{grid-row:1/3;align-content:center;gap:20px;background-color:var(--ch);color:var(--paper);box-shadow:var(--drop) var(--drop) 0 var(--yellow);
+  background-image:radial-gradient(rgba(255,253,245,.18) 1.8px,transparent 1.9px);background-size:13px 13px;padding:clamp(28px,3.4vw,48px)} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.ptop-card:first-child .ptop-t{font-size:clamp(2rem,2.8vw,2.6rem);color:var(--yellow);text-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic ink offset on display type */
+.ptop-card:first-child.long .ptop-t{font-size:clamp(1.7rem,2.2vw,2rem)}
+.ptop-card:first-child .ptop-m .chtag{background:var(--ink)}
+.ptop-card:first-child .ptop-votes{transform:rotate(-2deg);padding:10px 20px 8px}
+.ptop-card:first-child .ptop-votes strong{font-size:clamp(3.6rem,6vw,5.4rem)}
+.ptop-bubble{position:absolute;top:-30px;right:clamp(18px,3vw,40px);margin:0;font:400 1.8rem/1 var(--display);letter-spacing:.03em;color:var(--ink);padding:.5em .9em .4em;transform:rotate(6deg);z-index:1;max-width:none}
+.ptop-card:first-child.has-thumb{align-content:start}
+.ptop-thumb{transform:rotate(1deg)}
+.ptop-card:first-child .ptop-thumb{transform:rotate(-1.2deg)}
+@media (max-width:860px){.ptop-grid{grid-template-columns:1fr}.ptop-card:first-child{grid-row:auto}.ptop-bubble{font-size:1.4rem;top:-24px}}
 
 /* Store */
 .store{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
@@ -593,14 +613,15 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 %%SECTIONS%%
 
 <section class="pitch" aria-labelledby="h-pitch">
-  <div class="wrap pitch-grid">
-    <div>
-      <h2 id="h-pitch" class="reveal">Pick the next fight</h2>
-      <p class="reveal">Suggest a matchup for any of the three channels and vote for the ones you want to see. The most-voted idea each month becomes the Idea of the Month.</p>
-      %%CHAMP%%
-      %%CHAMPBTN%%
+  <div class="wrap">
+    <div class="pitch-head">
+      <div>
+        <h2 id="h-pitch" class="reveal">Pick the next fight</h2>
+        <p class="reveal">Suggest a matchup for any of the three channels and vote for the ones you want to see. The three most-voted ideas each month become the Ideas of the Month.</p>
+      </div>
+      <a class="btn reveal" href="ideas/">Submit and vote</a>
     </div>
-    %%CHAMPASIDE%%
+    %%CHAMP%%
   </div>
 </section>
 
