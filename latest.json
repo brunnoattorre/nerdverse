@@ -1,22 +1,27 @@
 {
   "science": [
     {
+      "id": "GDOIM9HxHyY",
+      "title": "Avengers vs The Last of Us - Could They Survive The Outbreak?",
+      "thumb": "https://i.ytimg.com/vi/GDOIM9HxHyY/maxresdefault.jpg"
+    },
+    {
       "id": "LopDT1vIf7Q",
-      "title": "Winchesters vs Freddy Krueger - Could Sam and Dean Survive Elm Street?",
+      "title": "Why The Winchesters vs Freddy Krueger Isn't Even Close",
       "thumb": "https://i.ytimg.com/vi/LopDT1vIf7Q/maxresdefault.jpg"
     },
     {
       "id": "1pR61WuXdT0",
       "title": "Superman vs Marvel - Could Superman Survive The Avengers and Galactus?",
       "thumb": "https://i.ytimg.com/vi/1pR61WuXdT0/maxresdefault.jpg"
-    },
-    {
-      "id": "E-ywS3C8tfY",
-      "title": "Wolverine vs Omni-Man - Could Wolverine Survive The Viltrumites?",
-      "thumb": "https://i.ytimg.com/vi/E-ywS3C8tfY/maxresdefault.jpg"
     }
   ],
   "history": [
+    {
+      "id": "OzhOynWsYLI",
+      "title": "What If a 1000 Vikings Defended Bunker Hill?",
+      "thumb": "https://i.ytimg.com/vi/OzhOynWsYLI/maxresdefault.jpg"
+    },
     {
       "id": "ce-Xsb7PMnY",
       "title": "What If 10 Space Marines Defended the Alamo in 1836?",
@@ -26,14 +31,14 @@
       "id": "ErIVH5-iDuo",
       "title": "What If Batman Tried To Save Abraham Lincoln?",
       "thumb": "https://i.ytimg.com/vi/ErIVH5-iDuo/maxresdefault.jpg"
-    },
-    {
-      "id": "rQagrROmZ1E",
-      "title": "What Mexican Soldiers Found Insane About The Alamo Defenders",
-      "thumb": "https://i.ytimg.com/vi/rQagrROmZ1E/maxresdefault.jpg"
     }
   ],
   "nature": [
+    {
+      "id": "fGd68GDWjM8",
+      "title": "What If Hamsters Were the Size of Bears?",
+      "thumb": "https://i.ytimg.com/vi/fGd68GDWjM8/maxresdefault.jpg"
+    },
     {
       "id": "A3HE1-h0re0",
       "title": "Which Dinosaur Could Kill a Xenomorph?",
@@ -43,11 +48,6 @@
       "id": "vEgEOaDF1Ss",
       "title": "Could a Neanderthal Survive Every Bear Species on Earth?",
       "thumb": "https://i.ytimg.com/vi/vEgEOaDF1Ss/maxresdefault.jpg"
-    },
-    {
-      "id": "EUbKfLVDZ_k",
-      "title": "Could a Bull Moose Survive Every Ice Age Predator?",
-      "thumb": "https://i.ytimg.com/vi/EUbKfLVDZ_k/maxresdefault.jpg"
     }
   ]
 }
