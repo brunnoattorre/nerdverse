@@ -100,6 +100,20 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .channel.science{background-color:var(--green)}
 .channel.history{background-color:var(--red)}
 .channel.nature{background-color:var(--blue)}
+.archive-btn{display:block;margin-top:34px;text-align:center;font-size:clamp(1.7rem,2.6vw,2.4rem);padding:.6em 1em .5em}
+.episodes-band{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
+.episodes-band h2{font-size:clamp(3rem,6vw,5.6rem)}
+.band-lede{font-weight:700;font-size:clamp(1.1rem,1.6vw,1.35rem);max-width:36em;margin-block:18px 40px}
+.doors{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.door{display:grid;gap:8px;padding:28px 26px;color:var(--paper);text-decoration:none;border:var(--line) solid var(--ink);
+  box-shadow:var(--drop) var(--drop) 0 var(--ink);transition:transform .18s ease,box-shadow .18s ease} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.door.science{background:var(--green);transform:rotate(-1deg)}
+.door.history{background:var(--red);transform:rotate(.8deg)}
+.door.nature{background:var(--blue);transform:rotate(-.6deg)}
+.door:hover{transform:translate(-3px,-3px) rotate(-1.2deg);box-shadow:11px 11px 0 var(--ink)} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.door-name{font:400 clamp(2.4rem,3.4vw,3.4rem)/1 var(--display);color:var(--yellow);text-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic ink offset on display type */
+.door-count{font-weight:800;font-size:1.1rem}
+@media (max-width:860px){.doors{grid-template-columns:1fr}}
 .channel-grid{display:grid;grid-template-columns:minmax(280px,.8fr) 1.4fr;gap:clamp(32px,5vw,80px);align-items:start}
 .channel.flip .channel-grid{grid-template-columns:1.4fr minmax(280px,.8fr)}
 .channel.flip .intro{order:2}
@@ -256,9 +270,9 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .champ-card:first-child .champ-votes{transform:rotate(2.5deg);font-size:1.05rem;min-width:9em;padding:18px 20px}
 .champ-card:first-child .champ-votes strong{font-size:clamp(4.2rem,7vw,6.5rem)}
 .champ-bubble{position:absolute;top:-30px;right:clamp(20px,4vw,64px);margin:0;font:400 1.9rem/1 var(--display);letter-spacing:.03em;color:var(--ink);padding:.5em .9em .4em;transform:rotate(6deg);z-index:1}
-.champ-card:first-child.has-thumb{grid-template-columns:1fr 1.1fr;grid-template-areas:"body thumb" "votes thumb"}
-.champ-card:first-child.has-thumb .champ-votes{justify-self:start;align-self:start;transform:rotate(-1.5deg)}
-.champ-card:first-child .champ-thumb{grid-area:thumb;transform:rotate(1.2deg)}
+.champ-card:first-child.has-thumb{grid-template-columns:1.7fr auto;grid-template-areas:"thumb thumb" "body votes";align-items:center}
+.champ-card:first-child.has-thumb .champ-votes{justify-self:end;align-self:center;transform:rotate(-1.5deg)}
+.champ-card:first-child .champ-thumb{grid-area:thumb;align-self:center;transform:rotate(1.2deg)}
 .champ-card:not(:first-child).has-thumb{grid-template-areas:"thumb" "body" "votes"}
 .champ-card:not(:first-child) .champ-thumb{grid-area:thumb}
 .champ-watch{margin-top:18px}
@@ -349,6 +363,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
       <li><a href="../#science">NerdScience</a></li>
       <li><a href="../#history">NerdHistory</a></li>
       <li><a href="../#nature">NerdNature</a></li>
+      <li><a href="../#episodes">Episodes</a></li>
       <li><a href="./" aria-current="page">Ideas</a></li>
       <li><a href="../#store">Store</a></li>
     </ul></nav>
@@ -426,13 +441,16 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
         <li><a href="https://www.youtube.com/@NerdScienceOfficial">NerdScience on YouTube</a></li>
         <li><a href="https://www.youtube.com/@NerdHistoryNs">NerdHistory on YouTube</a></li>
         <li><a href="https://www.youtube.com/@NerdNatureNs">NerdNature on YouTube</a></li>
+        <li><a href="/nerdscience/">NerdScience episodes</a></li>
+        <li><a href="/nerdhistory/">NerdHistory episodes</a></li>
+        <li><a href="/nerdnature/">NerdNature episodes</a></li>
         <li><a href="https://nerdscience-official.myspreadshop.com">Store</a></li>
       </ul>
     </div>
     <p class="fine">Ideas are suggestions from viewers and are not a promise that a video will be made. The NerdVerse channels are independent, fan-made projects, not affiliated with any rights holder.</p>
   </div>
 </footer>
-<script>window.NV = {"firebase": {"apiKey": "AIzaSyAuGrHNVEh7WS8P6A474kPmf13LB8-iYlo", "authDomain": "nerdscience-ideas.firebaseapp.com", "projectId": "nerdscience-ideas", "appId": "1:112765892803:web:b437786203bcc70a02ca76"}, "admins": ["brattorre@gmail.com"]};</script>
+<script>window.NV = {"firebase": {"apiKey": "AIzaSyAuGrHNVEh7WS8P6A474kPmf13LB8-iYlo", "authDomain": "nerdscience-ideas.firebaseapp.com", "projectId": "nerdscience-ideas", "appId": "1:112765892803:web:b437786203bcc70a02ca76"}, "admins": ["brattorre@gmail.com"], "episodes": {"hKCmxUGFzok": "/nerdscience/tmnt-vs-predator-who-wins-and-why/", "AbdwiN6L9bM": "/nerdscience/blade-vs-every-vampire-who-wins-and-why/", "GDOIM9HxHyY": "/nerdscience/avengers-vs-the-last-of-us-who-survives-and-why/", "LopDT1vIf7Q": "/nerdscience/winchesters-vs-freddy-krueger-who-wins-and-why/", "1pR61WuXdT0": "/nerdscience/superman-vs-avengers-and-galactus-who-wins-and-why/", "E-ywS3C8tfY": "/nerdscience/wolverine-vs-omni-man-can-logan-survive-viltrumites/", "3aWHBvLiG3Y": "/nerdscience/homelander-vs-avengers-who-wins-and-why/", "E-hKMjMmPrw": "/nerdscience/marvel-heroes-vs-clayface-who-survives-and-why/", "U9ocomcWcSo": "/nerdscience/ben-10-vs-justice-league-who-wins-and-why/", "SG2szzyxEec": "/nerdscience/pennywise-vs-ghost-rider-who-wins-and-why/", "ynhrLd2rjoQ": "/nerdhistory/ww2-armies-vs-godzilla-and-kaiju-who-survives-and-why/", "SowIvaAsP18": "/nerdhistory/modern-battalion-vs-4-ancient-walls-who-wins-and-why/", "OzhOynWsYLI": "/nerdhistory/1-000-vikings-vs-bunker-hill-who-wins-and-why/", "ce-Xsb7PMnY": "/nerdhistory/10-space-marines-vs-the-alamo-who-wins-and-why/", "ErIVH5-iDuo": "/nerdhistory/batman-vs-the-lincoln-assassination-who-wins-and-why/", "rQagrROmZ1E": "/nerdhistory/alamo-defenders-vs-santa-anna-s-army-who-wins-and-why/", "MAeG9q-CuYA": "/nerdhistory/10-jedi-vs-caesar-s-rome-who-wins-and-why/", "7Jk6xdsKf58": "/nerdhistory/daredevil-vs-the-colosseum-does-he-survive/", "in3z4zo1D4M": "/nerdhistory/japan-vs-california-national-guard-1942-who-wins/", "19wAQPszq98": "/nerdhistory/predator-vs-tokugawa-ieyasu-who-wins-and-why/", "y2vRLKbc0AY": "/nerdnature/white-rhino-vs-ice-age-predators-who-wins-and-why/", "fGd68GDWjM8": "/nerdnature/giant-hamster-vs-animal-control-who-survives-the-night/", "A3HE1-h0re0": "/nerdnature/xenomorph-vs-dinosaurs-who-wins-and-why/", "vEgEOaDF1Ss": "/nerdnature/neanderthal-vs-every-bear-who-wins-and-why/", "EUbKfLVDZ_k": "/nerdnature/bull-moose-vs-ice-age-predators-who-wins-and-why/", "ikIVepIvby4": "/nerdnature/desert-animals-vs-dune-s-arrakis-who-survives-and-why/", "5_JT81siJ8Y": "/nerdnature/swallowed-alive-anaconda-sperm-whale-mosasaur-croc/", "pnXEYMKvVdI": "/nerdnature/grizzly-vs-every-werewolf-who-wins-and-why/", "97tXnjNWA18": "/nerdnature/modern-humans-vs-4-ancient-human-species-who-wins/", "9FPz5dDNHNE": "/nerdnature/woolly-mammoth-vs-4-predators-who-wins-and-why/"}};</script>
 <script type="module" src="ideas.js"></script>
 </body>
 </html>

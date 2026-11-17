@@ -194,8 +194,18 @@ def fetch_all(previous):
 e = html.escape
 
 
+# Video id -> its episode page path (render_episodes fills this before the home page renders),
+# so a home-page card opens the written breakdown, which embeds the video, when one exists.
+EPISODE_PATHS = {}
+EPISODE_META = {}  # video id -> {"published", "duration"}, for the home page's VideoObject markup
+
+
 def video_panel(v, size):
-    return f'''<a class="panel vid {size} reveal" href="https://www.youtube.com/watch?v={e(v["id"])}">
+    href = EPISODE_PATHS.get(v["id"]) or f"https://www.youtube.com/watch?v={v['id']}"
+    # maxresdefault is 210-370KB a card; the cards render at most ~650px wide, so the 640px
+    # sddefault (big card) and 480px hqdefault (small cards) look the same at a fifth of the weight.
+    v = dict(v, thumb=f"https://i.ytimg.com/vi/{v['id']}/{'sddefault' if size == 'big' else 'hqdefault'}.jpg")
+    return f'''<a class="panel vid {size} reveal" href="{e(href)}">
   <img src="{e(v["thumb"])}" alt="{e(v["title"])}" loading="lazy" width="1280" height="720">
   <span class="play" aria-hidden="true"></span>
   <span class="caption">{e(v["title"])}</span>
@@ -219,7 +229,7 @@ def channel_section(ch, vids, flip):
     <div class="videos">
       <h3 class="latest-label">Latest episodes</h3>
       <div class="vid-grid">{videos}</div>
-      <a class="more" href="https://www.youtube.com/@{ch["handle"]}/videos">All {e(ch["name"])} videos</a>
+      <a class="btn archive-btn reveal" href="/{EPISODE_SLUGS[ch["key"]]}/">Every {e(ch["name"])} fight, explained <span aria-hidden="true">&rarr;</span></a>
     </div>
   </div>
 </section>'''
@@ -243,13 +253,31 @@ FIREBASE = {"apiKey": "AIzaSyAuGrHNVEh7WS8P6A474kPmf13LB8-iYlo",
             "appId": "1:112765892803:web:b437786203bcc70a02ca76"}
 ADMINS = ["brattorre@gmail.com"]  # must match isAdmin() in firestore.rules
 
-TITLE = "NerdScience Official: NerdScience, NerdHistory & NerdNature"
-DESC = ("NerdScience drops superheroes, historical armies and apex predators into impossible "
-        "fights and uses real science to call the winner. Watch the latest episodes and shop the merch.")
+# "who would win" (34K searches/mo) and the brand; checked with vidIQ, Nov 2026.
+TITLE = "Who Would Win? Heroes, Armies & Predators | NerdScience"
+DESC = ("Who would win? NerdScience drops superheroes, historical armies and apex predators into "
+        "impossible fights, then uses real science to call the winner.")
 
 
-def json_ld():
+def json_ld(data=None):
+    """Organization, WebSite and, when the latest videos are known, an ItemList of them."""
     channels = [f"https://www.youtube.com/@{c['handle']}" for c in CHANNELS]
+    videos = []
+    for c in CHANNELS:
+        for v in (data or {}).get(c["key"], []):
+            item = {"@type": "VideoObject", "name": v["title"],
+                    "thumbnailUrl": f"https://i.ytimg.com/vi/{v['id']}/hqdefault.jpg",
+                    "embedUrl": f"https://www.youtube.com/embed/{v['id']}",
+                    "contentUrl": f"https://www.youtube.com/watch?v={v['id']}",
+                    "description": f"{v['title']}: a {c['name']} who would win breakdown with survival tiers.",
+                    "publisher": {"@id": SITE + "#org"}}
+            meta = EPISODE_META.get(v["id"], {})
+            if not meta:
+                continue  # uploadDate is required for VideoObject; only episodes with a page carry it
+            item.update(uploadDate=meta["published"], duration=meta["duration"])
+            if EPISODE_PATHS.get(v["id"]):
+                item["url"] = SITE.rstrip("/") + EPISODE_PATHS[v["id"]]
+            videos.append(item)
     return json.dumps({
         "@context": "https://schema.org",
         "@graph": [
@@ -258,18 +286,25 @@ def json_ld():
              "logo": SITE + "assets/icon-192.png", "description": DESC, "sameAs": channels + [STORE]},
             {"@type": "WebSite", "@id": SITE + "#site", "name": "NerdScience Official",
              "url": SITE, "publisher": {"@id": SITE + "#org"}},
-        ],
+        ] + ([{"@type": "ItemList", "name": "Latest NerdScience, NerdHistory and NerdNature episodes",
+               "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": v}
+                                   for i, v in enumerate(videos)]}] if videos else []),
     }, ensure_ascii=False).replace("</", "<\\/")
 
 
-def write_seo_files():
+EPISODE_SLUGS = {"science": "nerdscience", "history": "nerdhistory", "nature": "nerdnature"}
+
+
+def write_seo_files(episode_pages=()):
+    """robots.txt and sitemap.xml; episode_pages is [(url, lastmod)] from render_episodes."""
     (HERE / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n")
+    today = f"{datetime.now():%Y-%m-%d}"
+    urls = [(SITE, today), (f"{SITE}ideas/", today)] + [(u, m or today) for u, m in episode_pages]
     (HERE / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        f"  <url><loc>{SITE}</loc><lastmod>{datetime.now():%Y-%m-%d}</lastmod><changefreq>daily</changefreq></url>\n"
-        f"  <url><loc>{SITE}ideas/</loc><lastmod>{datetime.now():%Y-%m-%d}</lastmod><changefreq>daily</changefreq></url>\n"
-        "</urlset>\n")
+        + "".join(f"  <url><loc>{u}</loc><lastmod>{m}</lastmod></url>\n" for u, m in urls)
+        + "</urlset>\n")
 
 
 def last_month_winner():
@@ -310,7 +345,7 @@ def champ_html(w):
     cards = []
     for i, t in enumerate(w["top"]):
         vid = t["videoId"]
-        watch = f"https://www.youtube.com/watch?v={e(vid)}" if vid else ""
+        watch = (e(EPISODE_PATHS.get(vid) or f"https://www.youtube.com/watch?v={vid}")) if vid else ""
         title = e(t["title"])
         cards.append(
             f'<article class="ptop-card ch-{e(t["channel"])}{" has-thumb" if vid else ""}{" long" if len(t["title"]) > 60 else ""} reveal">'
@@ -336,13 +371,22 @@ def render(data, champ=None):
         f'<span class="caption">{e(c["name"])}</span></a>'
         for c, v in zip(CHANNELS, hero_thumbs))
     sections = "".join(channel_section(c, data[c["key"]], i % 2 == 1) for i, c in enumerate(CHANNELS))
+    counts = {k: sum(1 for p in EPISODE_PATHS.values() if p.startswith(f"/{s}/")) for k, s in EPISODE_SLUGS.items()}
+    doors = "".join(
+        f'<a class="door {c["key"]} reveal" href="/{EPISODE_SLUGS[c["key"]]}/"><span class="door-name">{e(c["name"])}</span>'
+        f'<span class="door-count">{counts[c["key"]]} fights explained</span></a>' for c in CHANNELS)
+    episodes = (f'<section class="episodes-band" id="episodes" aria-labelledby="h-episodes"><div class="wrap">'
+                f'<h2 id="h-episodes" class="reveal">Every fight, explained</h2>'
+                f'<p class="band-lede reveal">Every episode written up: who won each fight, and the canon, history or '
+                f'biology that decided it, checked at the source. Search any hero, army or animal.</p>'
+                f'<div class="doors">{doors}</div></div></section>')
     products = "".join(product_panel(p, i) for i, p in enumerate(PRODUCTS))
     built = datetime.now().strftime("%-d %B %Y")
-    return (TEMPLATE.replace("%%STRIP%%", strip).replace("%%SECTIONS%%", sections)
+    return (TEMPLATE.replace("%%STRIP%%", strip).replace("%%SECTIONS%%", sections).replace("%%EPISODES%%", episodes)
             .replace("%%PRODUCTS%%", products).replace("%%DESIGN%%", DESIGN).replace("%%STORE%%", STORE)
             .replace("%%BUILT%%", built).replace("%%CHAMP%%", champ_html(champ))
             .replace("%%TITLE%%", e(TITLE)).replace("%%DESC%%", e(DESC))
-            .replace("%%JSONLD%%", json_ld()).replace("%%SITE%%", SITE))
+            .replace("%%JSONLD%%", json_ld(data)).replace("%%SITE%%", SITE))
 
 
 TEMPLATE = '''<!doctype html>
@@ -455,6 +499,20 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 .channel.science{background-color:var(--green)}
 .channel.history{background-color:var(--red)}
 .channel.nature{background-color:var(--blue)}
+.archive-btn{display:block;margin-top:34px;text-align:center;font-size:clamp(1.7rem,2.6vw,2.4rem);padding:.6em 1em .5em}
+.episodes-band{background-color:var(--yellow);border-top:var(--line) solid var(--ink);padding-block:clamp(72px,9vw,128px)}
+.episodes-band h2{font-size:clamp(3rem,6vw,5.6rem)}
+.band-lede{font-weight:700;font-size:clamp(1.1rem,1.6vw,1.35rem);max-width:36em;margin-block:18px 40px}
+.doors{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.door{display:grid;gap:8px;padding:28px 26px;color:var(--paper);text-decoration:none;border:var(--line) solid var(--ink);
+  box-shadow:var(--drop) var(--drop) 0 var(--ink);transition:transform .18s ease,box-shadow .18s ease} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.door.science{background:var(--green);transform:rotate(-1deg)}
+.door.history{background:var(--red);transform:rotate(.8deg)}
+.door.nature{background:var(--blue);transform:rotate(-.6deg)}
+.door:hover{transform:translate(-3px,-3px) rotate(-1.2deg);box-shadow:11px 11px 0 var(--ink)} /* taste-skill-ignore: comic print offset + halftone, requested style */
+.door-name{font:400 clamp(2.4rem,3.4vw,3.4rem)/1 var(--display);color:var(--yellow);text-shadow:3px 3px 0 var(--ink)} /* taste-skill-ignore: comic ink offset on display type */
+.door-count{font-weight:800;font-size:1.1rem}
+@media (max-width:860px){.doors{grid-template-columns:1fr}}
 .channel-grid{display:grid;grid-template-columns:minmax(280px,.8fr) 1.4fr;gap:clamp(32px,5vw,80px);align-items:start}
 .channel.flip .channel-grid{grid-template-columns:1.4fr minmax(280px,.8fr)}
 .channel.flip .intro{order:2}
@@ -575,6 +633,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
       <li><a href="#science">NerdScience</a></li>
       <li><a href="#history">NerdHistory</a></li>
       <li><a href="#nature">NerdNature</a></li>
+      <li><a href="#episodes">Episodes</a></li>
       <li><a href="ideas/">Ideas</a></li>
       <li><a href="#store">Store</a></li>
     </ul></nav>
@@ -585,8 +644,8 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 <section class="hero dots" aria-labelledby="h-hero">
   <div class="wrap hero-grid">
     <div>
-      <p class="bubble">Who survives?</p>
-      <h1 id="h-hero">Welcome to<br>the NerdVerse</h1>
+      <p class="bubble">Ask the NerdVerse</p>
+      <h1 id="h-hero">Who would win?</h1>
       <p class="lede">Three YouTube channels that drop heroes, armies and animals into impossible fights, then use real science to call the winner.</p>
       <a class="btn" href="#science">Watch the latest episodes</a>
       <div class="badges">
@@ -611,6 +670,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
 </section>
 
 %%SECTIONS%%
+%%EPISODES%%
 
 <section class="pitch" aria-labelledby="h-pitch">
   <div class="wrap">
@@ -647,6 +707,9 @@ h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-he
         <li><a href="https://www.youtube.com/@NerdScienceOfficial">NerdScience on YouTube</a></li>
         <li><a href="https://www.youtube.com/@NerdHistoryNs">NerdHistory on YouTube</a></li>
         <li><a href="https://www.youtube.com/@NerdNatureNs">NerdNature on YouTube</a></li>
+        <li><a href="/nerdscience/">NerdScience episodes</a></li>
+        <li><a href="/nerdhistory/">NerdHistory episodes</a></li>
+        <li><a href="/nerdnature/">NerdNature episodes</a></li>
         <li><a href="%%STORE%%">Store</a></li>
       </ul>
       <p>Videos updated %%BUILT%%</p>
@@ -686,7 +749,7 @@ document.documentElement.classList.add("js");
 
 def render_ideas():
     css = TEMPLATE[TEMPLATE.index("<style>") + 7:TEMPLATE.index("</style>")]
-    cfg = json.dumps({"firebase": FIREBASE, "admins": ADMINS}).replace("</", "<\\/")
+    cfg = json.dumps({"firebase": FIREBASE, "admins": ADMINS, "episodes": EPISODE_PATHS}).replace("</", "<\\/")
     return (IDEAS_TEMPLATE.replace("%%CSS%%", css).replace("%%CFG%%", cfg)
             .replace("%%SITE%%", SITE).replace("%%STORE%%", STORE))
 
@@ -759,9 +822,9 @@ IDEAS_TEMPLATE = '''<!doctype html>
 .champ-card:first-child .champ-votes{transform:rotate(2.5deg);font-size:1.05rem;min-width:9em;padding:18px 20px}
 .champ-card:first-child .champ-votes strong{font-size:clamp(4.2rem,7vw,6.5rem)}
 .champ-bubble{position:absolute;top:-30px;right:clamp(20px,4vw,64px);margin:0;font:400 1.9rem/1 var(--display);letter-spacing:.03em;color:var(--ink);padding:.5em .9em .4em;transform:rotate(6deg);z-index:1}
-.champ-card:first-child.has-thumb{grid-template-columns:1fr 1.1fr;grid-template-areas:"body thumb" "votes thumb"}
-.champ-card:first-child.has-thumb .champ-votes{justify-self:start;align-self:start;transform:rotate(-1.5deg)}
-.champ-card:first-child .champ-thumb{grid-area:thumb;transform:rotate(1.2deg)}
+.champ-card:first-child.has-thumb{grid-template-columns:1.7fr auto;grid-template-areas:"thumb thumb" "body votes";align-items:center}
+.champ-card:first-child.has-thumb .champ-votes{justify-self:end;align-self:center;transform:rotate(-1.5deg)}
+.champ-card:first-child .champ-thumb{grid-area:thumb;align-self:center;transform:rotate(1.2deg)}
 .champ-card:not(:first-child).has-thumb{grid-template-areas:"thumb" "body" "votes"}
 .champ-card:not(:first-child) .champ-thumb{grid-area:thumb}
 .champ-watch{margin-top:18px}
@@ -852,6 +915,7 @@ IDEAS_TEMPLATE = '''<!doctype html>
       <li><a href="../#science">NerdScience</a></li>
       <li><a href="../#history">NerdHistory</a></li>
       <li><a href="../#nature">NerdNature</a></li>
+      <li><a href="../#episodes">Episodes</a></li>
       <li><a href="./" aria-current="page">Ideas</a></li>
       <li><a href="../#store">Store</a></li>
     </ul></nav>
@@ -929,6 +993,9 @@ IDEAS_TEMPLATE = '''<!doctype html>
         <li><a href="https://www.youtube.com/@NerdScienceOfficial">NerdScience on YouTube</a></li>
         <li><a href="https://www.youtube.com/@NerdHistoryNs">NerdHistory on YouTube</a></li>
         <li><a href="https://www.youtube.com/@NerdNatureNs">NerdNature on YouTube</a></li>
+        <li><a href="/nerdscience/">NerdScience episodes</a></li>
+        <li><a href="/nerdhistory/">NerdHistory episodes</a></li>
+        <li><a href="/nerdnature/">NerdNature episodes</a></li>
         <li><a href="%%STORE%%">Store</a></li>
       </ul>
     </div>
@@ -952,9 +1019,15 @@ def main():
         if any(len(v) < 3 for v in data.values()):
             sys.exit("Not enough videos fetched and no previous run to fall back on; index.html left as is.")
         CACHE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+    import render_episodes  # imports build, so it stays inside main()
+    episode_pages = render_episodes.render()
+    for ch_eps in render_episodes.load().values():
+        EPISODE_PATHS.update({d["video_id"]: d["path"] for d in ch_eps})
+        EPISODE_META.update({d["video_id"]: {"published": d["published"], "duration": d["duration"]}
+                             for d in ch_eps})
     (HERE / "index.html").write_text(render(data, last_month_winner()))
     (HERE / "ideas" / "index.html").write_text(render_ideas())
-    write_seo_files()
+    write_seo_files(episode_pages)
     print(f"Wrote {HERE / 'index.html'}")
 
 

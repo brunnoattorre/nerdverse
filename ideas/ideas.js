@@ -155,7 +155,8 @@ function renderChamp(month, win, top) {
     <p class="champ-sub">The ${top.length > 1 ? `${["", "", "two", "three"][top.length]} ideas that gained the most votes` : "idea that gained the most votes"} in ${esc(name)}.</p>
     <ol class="champ-list">${top.map((t, i) => {
       const field = VIDEO_FIELDS[i], vid = win && win[field];
-      const watch = vid && `https://www.youtube.com/watch?v=${esc(vid)}`;
+      // A video with an episode page opens the write-up (which embeds the video); otherwise YouTube.
+      const watch = vid && ((CFG.episodes || {})[vid] || `https://www.youtube.com/watch?v=${esc(vid)}`);
       return `<li class="champ-card ch-${esc(t.channel)}${watch ? " has-thumb" : ""}${t.title.length > 60 ? " long" : ""}">
         ${i === 0 ? `<p class="bubble champ-bubble">${PLACES[0]}!</p>` : ""}
         ${watch ? `<a class="panel champ-thumb" href="${watch}" aria-label="Watch ${esc(t.title)}">

@@ -1,0 +1,188 @@
+{
+ "headline": "Japan vs California National Guard, 1942: Who Wins?",
+ "meta_description": "One guardsman, 88 rounds and a Japanese landing at Santa Barbara in 1942. Can he get home? How fuel drums, a bridge and a depot decide the answer.",
+ "dek": "A California National Guard sergeant with two 155mm guns and 88 Garand rounds faces a Japanese landing at Santa Barbara in February 1942.",
+ "verdict": "The guardsman gets home because Japan's invasion runs out of fuel first.",
+ "fights": [
+  {
+   "title": "Chapter One: The Landing",
+   "matchup": "California National Guard battery vs Japanese landing force",
+   "winner": "Japanese landing force (the beachhead holds and grows)",
+   "tier": "D",
+   "why": [
+    "The battery loses because it gets one salvo. The crew rams home a 95-pound, 6-inch shell and fires. One round lands short and one lands long, which brackets the target, so the next salvo would hit. Dive bombers arrive first and wipe out the headland. The guns are gone before they can fire for effect.",
+    "The carriers are the weakest link in the premise. In real February 1942, Japan's big carriers were putting 188 planes over Darwin, Australia, nearly 7,000 nautical miles from Santa Barbara. The story grants Japan the air cover so it can ask what happens on the ground. The opening is also real: on February 23, 1942, the submarine I-17 shelled the Ellwood oil field for about 20 minutes and hit a derrick and a pump house.",
+    "The Garand ping is our first test. The sergeant dumps his half-spent clips to avoid it, which costs four rounds. The Japanese rifleman who rushes him comes the way Japanese infantry were drilled: two men over the berm while a third fires to pin him down. The ping had nothing to do with it. In a 1952 Army study called Project Doughboy, only one in four Korea riflemen objected to the sound. Researcher Jonathan Ferguson writes that there is no evidence the ping ever endangered a rifleman.",
+    "We score this a D. The sergeant is unhurt with 48 rounds, but he is cut off behind a growing beachhead. His 40-man battery is down to five or six. Santa Barbara's harbor, railyard and phone exchange are gone. The second wave is rolling steel fuel drums up the sand, and Highway 101 is jammed with fleeing civilians. Watch both."
+   ]
+  },
+  {
+   "title": "Chapter Two: The Farmhouse",
+   "matchup": "Guardsmen in a farmhouse vs Type 95 tank and Japanese infantry",
+   "winner": "Japanese force (only the sergeant gets out)",
+   "tier": "F",
+   "why": [
+    "The Type 95 light tank is a weak machine. It has half an inch of armor at its thickest and a short 37mm gun. Against a house full of men with rifles, that is plenty. Its first shell punches through the porch rail and its second takes out the front window, which sends glass across the room. The guardsmen can shoot the infantry behind it, but they cannot stop the tank.",
+    "The fight is decided by a Malaya-style flank. Under General Yamashita, Japanese troops broke British defensive lines down the peninsula with frontal pressure and deep flanking moves through the jungle. Here the Japanese lieutenant parks the tank where every rifle in the house can see it. A machine gun rakes the wall at chest height, and two squads go through the lemon rows toward the kitchen door.",
+    "The guardsmen's one hope is artillery, and it is gone. The farmhouse phone line runs through the Santa Barbara exchange, which has already been destroyed, so the call goes nowhere. The lieutenant is shot through the throat while turning from the dead phone. The private beside the sergeant is out of ammo, so the sergeant hands him two clips. That leaves the sergeant 24 rounds.",
+    "The kitchen door blows in while every man is watching the tank. This is the same army that bayoneted patients at Alexandra Hospital in Singapore, so the bayonets are no bluff. The sergeant survives with a fireplace poker and a cast-iron skillet, and the other guardsmen are dead. He goes out the pantry window with a wound across his thigh, and we drop his tier to F."
+   ]
+  },
+  {
+   "title": "Chapter Three: The Fighting Withdrawal",
+   "matchup": "One 75mm gun and a demolished bridge vs Japanese tanks and infantry",
+   "winner": "The Americans (the bridge crossing is stopped)",
+   "tier": "C",
+   "why": [
+    "No rescue comes from the sea. In the last week of February 1942, the carrier Enterprise was bombing Wake Island, about 4,000 nautical miles away. The Saratoga was in a shipyard with a Japanese torpedo hole in her side. The sergeant's way out is an army truck convoy, and then he climbs off it to load a 75mm field gun at a river bridge with a 30-round supply.",
+    "The 75 does what a field gun at point-blank range should. The first Type 95 takes a hit through the hull and burns. The second tank does not need a shell. It stops 50 yards short of the bridge with its engine coughing, because it is out of fuel. Its drums are 30 miles back behind a highway full of abandoned Packards. A Type 95 can go well over 100 miles on a full load on a good road. This one has ground through orchards for a day and a night.",
+    "The third tank brings the cost. The 75 misses, the tank's 37mm shell bursts on the sandbags, and the gunner, who had said \"30\" rounds, is killed. The sergeant can load the gun but not aim it. An engineer lights the fuses with the tank on the span. The bridge folds and the tank drops into the river nose first.",
+    "The tier jumps from F to C. The bridge is down and the tanks are stalling, but the sergeant's ride is gone and he has a single clip. The captain circles a fuel depot three miles behind Japanese lines on a map and gives him demolition charges."
+   ]
+  },
+  {
+   "title": "Chapter Four: The Counterstrike",
+   "matchup": "Demolition raiders vs the Japanese fuel depot",
+   "winner": "The Americans (the depot is destroyed)",
+   "tier": "A",
+   "why": [
+    "The captain circles fuel instead of guns because of how Japan planned the campaign. Its army traveled light and expected to eat and fuel up from captured stores. Troops even had a name for British supplies seized in retreat: Churchill rations. When Yamashita's men took Kuala Lumpur, they found food, fuel and ammunition waiting. In California the only supply is what came ashore in drums, so destroying the drums takes away the army's way to move.",
+    "The raid is quiet until it isn't. Twelve men wade the river, blacken their faces with burnt cork and creep through the lemon grove at midnight. A dog barks and a guard steps close, so the sergeant uses a knife instead of the rifle to keep the hollow asleep. He puts charges on a captured gasoline truck and the nearest row of drums. Then he spends his last eight rounds covering two engineers caught in the open. He lets the Garand ping ring, since nothing is left to hide.",
+    "We do not oversell the result. Nothing stalls that night, because every tank and truck still holds whatever is in its own tank. The drums go up in a chain, and the army is stranded within a day or two. At dawn, American planes from inland airfields sweep the beachhead. The tier climbs to A: the invaders can still fight for a day or two, but they can't go anywhere."
+   ]
+  }
+ ],
+ "takeaway": "The sergeant's 88 rounds were never going to stop an army, and he does not need them to. The invasion fails on supply. Japanese tanks and trucks run on fuel that comes ashore in steel drums, and that fuel is stuck behind a jammed highway, then burned in one depot. The real-world parallel is oil: roughly 80% of Japan's oil imports in the late 1930s came from the United States, and sales continued until the summer of 1941. In the story, Japan's army runs dry on an American coast dotted with derricks. The sergeant lives, but nobody from his battery walks home with him.",
+ "entities": [
+  "Japan",
+  "California National Guard",
+  "Santa Barbara",
+  "I-17",
+  "Ellwood oil field",
+  "Highway 101",
+  "M1 Garand",
+  "Garand ping",
+  "Project Doughboy",
+  "Jonathan Ferguson",
+  "155mm gun",
+  "Type 95 light tank",
+  "75mm field gun",
+  "Darwin",
+  "Wake Island",
+  "USS Enterprise",
+  "USS Saratoga",
+  "Singapore",
+  "Alexandra Hospital",
+  "Malaya",
+  "General Yamashita",
+  "Kuala Lumpur",
+  "Churchill rations",
+  "Carpinteria",
+  "Los Angeles",
+  "World War II",
+  "February 1942",
+  "Japanese oil imports late 1930s"
+ ],
+ "search_terms": [
+  "what if Japan invaded California 1942",
+  "Japan invasion of California WW2 alternate history",
+  "would Japan have invaded the US mainland WW2",
+  "Garand ping myth true or false",
+  "I-17 Ellwood oil field shelling 1942",
+  "Type 95 Ha-Go vs 75mm gun",
+  "Japan oil supply from United States 1930s",
+  "NerdHistory Japan California invasion"
+ ],
+ "sources": [
+  {
+   "title": "Bombardment of Ellwood (Wikipedia)",
+   "url": "https://en.wikipedia.org/wiki/Bombardment_of_Ellwood",
+   "supports": "I-17 shelled Ellwood on Feb 23, 1942 for 20 minutes, destroying a derrick and pump house"
+  },
+  {
+   "title": "The Bombing of Darwin (NT Government)",
+   "url": "https://lant.nt.gov.au/explore-nt-history/bombing-darwin",
+   "supports": "188 Japanese aircraft from four carriers hit Darwin on 19 Feb 1942"
+  },
+  {
+   "title": "Myths & Misconceptions: the M1 'ping' (Armament Research Services)",
+   "url": "https://armamentresearch.com/myths-misconceptions-the-m1-ping/",
+   "supports": "Project Doughboy 1952 memo: one-fourth objected to the clip noise; Ferguson: no evidence the ping endangered infantrymen"
+  },
+  {
+   "title": "Type 95 Ha-Go light tank (Wikipedia)",
+   "url": "https://en.wikipedia.org/wiki/Type_95_Ha-Go_light_tank",
+   "supports": "12 mm maximum armour, 37 mm gun, about 209 km operational range"
+  },
+  {
+   "title": "Alexandra Hospital massacre (Singapore Infopedia, NLB)",
+   "url": "https://www.nlb.gov.sg/main/article-detail?cmsuuid=7d4fd9a0-7bd0-4533-b0ea-3aa559673b0e",
+   "supports": "Japanese soldiers bayoneted patients, including an anaesthetised patient on the operating table"
+  },
+  {
+   "title": "\"To Retrieve Our Initial Disaster\" (USNI Naval History)",
+   "url": "https://www.usni.org/magazines/naval-history-magazine/1992/june/retrieve-our-initial-disaster",
+   "supports": "Enterprise raided Wake on 24 Feb 1942; Saratoga torpedoed Jan 1942 and sent to Puget Sound for repairs"
+  },
+  {
+   "title": "M1 / M2 155mm \"Long Tom\" Towed Gun (GlobalSecurity)",
+   "url": "https://www.globalsecurity.org/military/systems/ground/m2-155.htm",
+   "supports": "155mm Long Tom fired a 95-pound shell"
+  },
+  {
+   "title": "Great Commanders - Yamashita (History of War)",
+   "url": "https://www.military-history.org/feature/great-commanders-yamashita.htm",
+   "supports": "Japanese troops used captured supplies known as 'Churchill rations'"
+  },
+  {
+   "title": "Invasion of Malaya and Singapore (WW2DB)",
+   "url": "https://ww2db.com/battle_spec.php?battle_id=47",
+   "supports": "At Kuala Lumpur Yamashita found stores of food, fuel and ammunition"
+  },
+  {
+   "title": "Fall of Singapore: How Japan's Bicycle Army Conquered Malaya in 70 Days (Histofreak)",
+   "url": "https://histofreak.com/fall-of-singapore-how-japans-bicycle-army-conquered-malaya-in-70-days/",
+   "supports": "Jitra Line collapsed to frontal pressure and deep flanking movements through the jungle"
+  }
+ ],
+ "fact_check": {
+  "checked": 18,
+  "corrected": 3,
+  "notes": [
+   "Chapter One said Ferguson 'found no documented case' of the ping getting a man killed. His published piece says there is no evidence it endangered infantrymen, so the line now says that.",
+   "Chapter Two said Yamashita's troops beat British roadblocks 'by walking around them instead of attacking head-on'. The source describes frontal pressure combined with deep flanking moves through the jungle, so the line now says that. The Malaya-style flank still carries the fight as before.",
+   "Takeaway said roughly 80% of Japan's oil supply in 1939 came from the US. Sources give about 80% of Japan's oil imports from the US in the late 1930s, so the line now says imports and the late 1930s. Sales continuing until summer 1941 is unchanged."
+  ]
+ },
+ "products": [
+  {
+   "name": "The Essential M1 Garand: A Practical and Historical Guide for Shooters and Collectors",
+   "asin": "B07HY22WNC",
+   "kind": "book",
+   "why": "Illustrated history of the M1 Garand, the rifle at the heart of the episode, including its ping.",
+   "url": "https://www.amazon.com/dp/B07HY22WNC?tag=nerdscience-20"
+  },
+  {
+   "name": "Panic on the Pacific: How America Prepared for the West Coast Invasion",
+   "asin": "1621574970",
+   "kind": "book",
+   "why": "Covers US West Coast defense against Japanese attack fears, including 1942 submarine shellings like Ellwood.",
+   "url": "https://www.amazon.com/dp/1621574970?tag=nerdscience-20"
+  },
+  {
+   "name": "Tora! Tora! Tora! (Blu-ray)",
+   "asin": "B005OOSPZO",
+   "kind": "film",
+   "why": "Classic film of Japan's WW2 Pacific attack, matching the episode's Japan-versus-America theme.",
+   "url": "https://www.amazon.com/dp/B005OOSPZO?tag=nerdscience-20"
+  }
+ ],
+ "video_id": "in3z4zo1D4M",
+ "video_title": "What Japan Actually Planned To Do If They Won WW2",
+ "channel": "history",
+ "published": "2026-11-09T12:19:52Z",
+ "duration": "PT22M9S",
+ "slug": "japan-vs-california-national-guard-1942-who-wins",
+ "generated": "2026-11-17T16:11:24Z",
+ "model": "claude-sonnet-5-5"
+}

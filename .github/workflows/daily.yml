@@ -44,6 +44,27 @@ jobs:
           pip install --quiet google-cloud-firestore
           python3 daily_winner.py
 
+      - name: Write episode pages for new videos (transcript, Claude breakdown, fact check, Amazon picks)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true   # a failed episode is retried tomorrow; the site still deploys
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_KEY }}
+          YT_CAPTION_TOKENS: ${{ secrets.YT_CAPTION_TOKENS }}
+          YT_OAUTH_CLIENT_ID: ${{ secrets.YT_OAUTH_CLIENT_ID }}
+          YT_OAUTH_CLIENT_SECRET: ${{ secrets.YT_OAUTH_CLIENT_SECRET }}
+        run: |
+          pip install --quiet anthropic certifi
+          python3 episodes.py --max-new 3
+
+      - name: Refresh Amazon product photos (allowed for 24 hours; skipped until the account is eligible)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        env:
+          AMAZON_CREDENTIAL_ID: ${{ secrets.AMAZON_CREDENTIAL_ID }}
+          AMAZON_CREDENTIAL_SECRET: ${{ secrets.AMAZON_CREDENTIAL_SECRET }}
+        run: python3 amazon_images.py
+
       - name: Fetch latest videos and render
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
@@ -54,11 +75,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add latest.json index.html sitemap.xml
-          git diff --cached --quiet || { git commit -m "Daily refresh: latest videos"; git push; }
+          git add latest.json index.html sitemap.xml episodes nerdscience nerdhistory nerdnature
+          git diff --cached --quiet || { git commit -m "Daily refresh: latest videos and episode pages"; git push; }
 
       - name: Stage public files
-        run: mkdir -p public && cp -R index.html favicon.ico robots.txt sitemap.xml assets ideas public/
+        run: mkdir -p public && cp -R index.html favicon.ico robots.txt sitemap.xml assets ideas nerdscience nerdhistory nerdnature public/
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
