@@ -346,6 +346,56 @@ def pick_products(title, channel, page, tries=2):
     return products[:3]
 
 
+# Channels whose YouTube descriptions get a "Full breakdown" link to their episode page.
+LINK_CHANNELS = [c.strip() for c in os.environ.get("DESCRIPTION_LINK_CHANNELS", "NerdScience").split(",") if c.strip()]
+SITE_URL = "https://nerdscienceofficial.com"
+
+
+def _videos_update(token, body):
+    req = urllib.request.Request(
+        "https://www.googleapis.com/youtube/v3/videos?part=snippet", method="PUT",
+        data=json.dumps(body).encode(),
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=30, context=build.SSL) as r:
+        return json.loads(r.read())
+
+
+def link_description(video_id, channel_name, page_path):
+    """Add 'Full breakdown and sources: <page>' to the video's description, once.
+
+    It goes after the description's paragraphs and before the chapters (or the hashtags),
+    so the keyword-tuned opening, the chapter list and the hashtags stay where they are.
+    The title, tags and category are sent back unchanged."""
+    if channel_name not in LINK_CHANNELS:
+        return "channel not enabled"
+    token = _caption_token(channel_name)
+    if not token:
+        return "no token"
+    items = json.loads(_api("videos", {"part": "snippet", "id": video_id}, token)).get("items", [])
+    if not items:
+        return "video not found"
+    sn = items[0]["snippet"]
+    desc = sn.get("description", "")
+    if "nerdscienceofficial.com" in desc:
+        return "already linked"
+    line = f"Full breakdown and sources: {SITE_URL}{page_path}"
+    lines = desc.split("\n")
+    at = next((i for i, l in enumerate(lines) if re.match(r"\s*(0?0:00|0:00)\b", l)), None)
+    if at is None:
+        at = next((i for i, l in enumerate(lines) if l.strip().startswith("#")), len(lines))
+    while at > 0 and not lines[at - 1].strip():
+        at -= 1
+    # lines[at:] already starts with the blank line that separated paragraphs from chapters
+    new = "\n".join(lines[:at] + ["", line] + lines[at:]).strip()
+    if len(new) > 5000:
+        return "description too long"
+    body = {"id": video_id, "snippet": {k: sn[k] for k in ("title", "categoryId", "tags", "defaultLanguage",
+                                                          "defaultAudioLanguage") if k in sn}}
+    body["snippet"]["description"] = new
+    _videos_update(token, body)
+    return "linked"
+
+
 def _slug(text):
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return re.sub(r"-+", "-", s)[:70].rstrip("-")
@@ -415,8 +465,22 @@ def main():
     ap.add_argument("--only", nargs="*", default=[], help="these video ids only (regenerates them)")
     ap.add_argument("--channel", choices=list(SLUGS), help="one channel only")
     ap.add_argument("--revoice", action="store_true", help="run the voice pass on every saved page")
+    ap.add_argument("--link-descriptions", action="store_true",
+                    help="add the episode-page link to every saved episode's YouTube description")
     ap.add_argument("--repick", action="store_true", help="re-pick Amazon products where a page has fewer than 3")
     a = ap.parse_args()
+
+    if a.link_descriptions:
+        for ch in build.CHANNELS:
+            for f in sorted((DATA / SLUGS[ch["key"]]).glob("*.json")):
+                page = json.loads(f.read_text())
+                try:
+                    res = link_description(page["video_id"], ch["name"], f"/{SLUGS[ch['key']]}/{page['slug']}/")
+                except Exception as err:
+                    res = f"failed: {err}"
+                if res != "channel not enabled":
+                    print(f"  {ch['name']} {page['video_id']}: {res}")
+        return 0
 
     if a.repick:
         for ch in build.CHANNELS:
@@ -473,6 +537,11 @@ def main():
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(json.dumps(page, ensure_ascii=False, indent=1))
             made += 1
+            path = f"/{SLUGS[ch['key']]}/{page['slug']}/"
+            try:
+                print(f"    description: {link_description(v['id'], ch['name'], path)}")
+            except Exception as err:  # a description edit must never fail the page
+                print(f"    description link failed: {err}")
             print(f"    saved: {len(page['fights'])} fights, {len(page.get('sources', []))} sources, "
                   f"{page.get('fact_check', {}).get('corrected', 0)} corrections, "
                   f"{len(page['products'])} products")
