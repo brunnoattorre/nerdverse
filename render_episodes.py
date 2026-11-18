@@ -321,7 +321,7 @@ def render():
         out = HERE / slug
         out.mkdir(exist_ok=True)
         (out / "index.html").write_text(archive_page(ch, lst))
-        pages.append((f"{SITE}{slug}/", lst[0]["published"][:10] if lst else None))
+        pages.append((f"{SITE}{slug}/", max(d.get("generated", d["published"]) for d in lst)[:10] if lst else None))
         live = {d["slug"] for d in lst}
         for d in lst:
             sib = [s for s in lst if s is not d]

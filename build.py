@@ -16,7 +16,7 @@ import re
 import ssl
 import sys
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -295,11 +295,37 @@ def json_ld(data=None):
 EPISODE_SLUGS = {"science": "nerdscience", "history": "nerdhistory", "nature": "nerdnature"}
 
 
+SITEMAP_STATE = HERE / "sitemap_state.json"
+# Parts of a page that change on every build without its content changing.
+_VOLATILE = re.compile(r"Videos updated [^<]*|\?v=[0-9a-f]{6,}")
+
+
+def _lastmod(url, today, seed, state):
+    """The date this URL's rendered content last changed: a fingerprint of its HTML (minus
+    build-only noise) is kept in sitemap_state.json, and the date moves only when it changes.
+    A URL seen for the first time takes its own date (seed) when it has one."""
+    page = HERE / url[len(SITE):] / "index.html"
+    if not page.exists():
+        return seed or today
+    digest = __import__("hashlib").sha256(_VOLATILE.sub("", page.read_text()).encode()).hexdigest()
+    old = state.get(url)
+    if not old:
+        state[url] = {"hash": digest, "date": seed or today}
+    elif old["hash"] != digest:
+        state[url] = {"hash": digest, "date": today}
+    return state[url]["date"]
+
+
 def write_seo_files(episode_pages=()):
-    """robots.txt and sitemap.xml; episode_pages is [(url, lastmod)] from render_episodes."""
+    """robots.txt and sitemap.xml; episode_pages is [(url, lastmod)] from render_episodes,
+    whose dates seed the state the first time a URL is seen."""
     (HERE / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n")
-    today = f"{datetime.now():%Y-%m-%d}"
-    urls = [(SITE, today), (f"{SITE}ideas/", today)] + [(u, m or today) for u, m in episode_pages]
+    today = f"{datetime.now(timezone.utc):%Y-%m-%d}"
+    state = json.loads(SITEMAP_STATE.read_text()) if SITEMAP_STATE.exists() else {}
+    seeds = {SITE: None, f"{SITE}ideas/": None, **dict(episode_pages)}
+    urls = [(u, _lastmod(u, today, seed, state)) for u, seed in seeds.items()]
+    state = {u: state[u] for u in seeds if u in state}  # drop pages that no longer exist
+    SITEMAP_STATE.write_text(json.dumps(state, indent=1, sort_keys=True))
     (HERE / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
