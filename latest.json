@@ -1,6 +1,11 @@
 {
   "science": [
     {
+      "id": "QolI1qxKqbk",
+      "title": "Lord of the Rings vs Harry Potter - Could Harry Survive The One Ring?",
+      "thumb": "https://i.ytimg.com/vi/QolI1qxKqbk/maxresdefault.jpg"
+    },
+    {
       "id": "hKCmxUGFzok",
       "title": "Ninja Turtles vs Predator - Could They Survive The Yautja?",
       "thumb": "https://i.ytimg.com/vi/hKCmxUGFzok/maxresdefault.jpg"
@@ -9,14 +14,14 @@
       "id": "AbdwiN6L9bM",
       "title": "Blade vs Every Vampire - Could Blade Survive Dimitrescu and Alucard?",
       "thumb": "https://i.ytimg.com/vi/AbdwiN6L9bM/maxresdefault.jpg"
-    },
-    {
-      "id": "GDOIM9HxHyY",
-      "title": "Avengers vs The Last of Us - Could They Survive The Outbreak?",
-      "thumb": "https://i.ytimg.com/vi/GDOIM9HxHyY/maxresdefault.jpg"
     }
   ],
   "history": [
+    {
+      "id": "wG44o62ywik",
+      "title": "What If 10 Halo Spartans Fought the Battle of Thermopylae?",
+      "thumb": "https://i.ytimg.com/vi/wG44o62ywik/maxresdefault.jpg"
+    },
     {
       "id": "ynhrLd2rjoQ",
       "title": "Which WW2 Army Could Survive Godzilla?",
@@ -26,11 +31,6 @@
       "id": "SowIvaAsP18",
       "title": "What If Modern Soldiers Stormed the Great Wall, Babylon and Troy?",
       "thumb": "https://i.ytimg.com/vi/SowIvaAsP18/maxresdefault.jpg"
-    },
-    {
-      "id": "OzhOynWsYLI",
-      "title": "What If 1,000 Vikings Defended Bunker Hill?",
-      "thumb": "https://i.ytimg.com/vi/OzhOynWsYLI/maxresdefault.jpg"
     }
   ],
   "nature": [
