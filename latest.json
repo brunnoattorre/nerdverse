@@ -1,6 +1,11 @@
 {
   "science": [
     {
+      "id": "5RfKgXzg94Y",
+      "title": "Jason Voorhees vs Batman Villains - Can Anyone Stop Him?",
+      "thumb": "https://i.ytimg.com/vi/5RfKgXzg94Y/maxresdefault.jpg"
+    },
+    {
       "id": "QolI1qxKqbk",
       "title": "Lord of the Rings vs Harry Potter - Could Harry Survive The One Ring?",
       "thumb": "https://i.ytimg.com/vi/QolI1qxKqbk/maxresdefault.jpg"
@@ -9,14 +14,14 @@
       "id": "hKCmxUGFzok",
       "title": "Ninja Turtles vs Predator - Could They Survive The Yautja?",
       "thumb": "https://i.ytimg.com/vi/hKCmxUGFzok/maxresdefault.jpg"
-    },
-    {
-      "id": "AbdwiN6L9bM",
-      "title": "Blade vs Every Vampire - Could Blade Survive Dimitrescu and Alucard?",
-      "thumb": "https://i.ytimg.com/vi/AbdwiN6L9bM/maxresdefault.jpg"
     }
   ],
   "history": [
+    {
+      "id": "4MjKH_KYSlI",
+      "title": "What If Batman Hunted The Zodiac Killer in 1969?",
+      "thumb": "https://i.ytimg.com/vi/4MjKH_KYSlI/maxresdefault.jpg"
+    },
     {
       "id": "wG44o62ywik",
       "title": "What If 10 Halo Spartans Fought the Battle of Thermopylae?",
@@ -26,14 +31,14 @@
       "id": "ynhrLd2rjoQ",
       "title": "Which WW2 Army Could Survive Godzilla?",
       "thumb": "https://i.ytimg.com/vi/ynhrLd2rjoQ/maxresdefault.jpg"
-    },
-    {
-      "id": "SowIvaAsP18",
-      "title": "What If Modern Soldiers Stormed the Great Wall, Babylon and Troy?",
-      "thumb": "https://i.ytimg.com/vi/SowIvaAsP18/maxresdefault.jpg"
     }
   ],
   "nature": [
+    {
+      "id": "b4upGf9kOI0",
+      "title": "Which Apex Predator Can Take Down a Great White Shark?",
+      "thumb": "https://i.ytimg.com/vi/b4upGf9kOI0/maxresdefault.jpg"
+    },
     {
       "id": "y2vRLKbc0AY",
       "title": "Which Ice Age Predator Can Take Down a Rhino?",
@@ -43,11 +48,6 @@
       "id": "fGd68GDWjM8",
       "title": "What If Hamsters Were the Size of Bears?",
       "thumb": "https://i.ytimg.com/vi/fGd68GDWjM8/maxresdefault.jpg"
-    },
-    {
-      "id": "A3HE1-h0re0",
-      "title": "Which Dinosaur Could Kill a Xenomorph?",
-      "thumb": "https://i.ytimg.com/vi/A3HE1-h0re0/maxresdefault.jpg"
     }
   ]
 }
