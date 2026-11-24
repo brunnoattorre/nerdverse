@@ -19,9 +19,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -85,5 +82,16 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: public
+
+  # Deploy in its own job, as GitHub's Pages template does: in the same job, deploy-pages
+  # sometimes looked the artifact up before it was registered ("No artifacts named
+  # github-pages were found", Nov 21 and Nov 24, 2026) though the upload had succeeded.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - id: deploy
         uses: actions/deploy-pages@v5
