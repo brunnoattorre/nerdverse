@@ -19,6 +19,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # The API keys are github-pages environment secrets, so the build job needs the
+    # environment too (moving it to the deploy job alone emptied YOUTUBE_API_KEY, Nov 25).
+    environment: github-pages
     steps:
       - uses: actions/checkout@v4
 
